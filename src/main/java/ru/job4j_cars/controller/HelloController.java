@@ -10,4 +10,9 @@ public class HelloController {
     public String hello() {
         return "Hello Spring Boot from Job4j Cars!";
     }
+
+    @GetMapping("/api/cars")
+    public String getCars() {
+        return "Список автомобилей (JSON)";
+    }
 }
