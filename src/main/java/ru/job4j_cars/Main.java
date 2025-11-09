@@ -1,10 +1,10 @@
-package com.mycompany;
+package ru.job4j_cars;
 
 /**
  * Hello world!
  *
  */
-public class App 
+public class Main
 {
     public static void main( String[] args )
     {
