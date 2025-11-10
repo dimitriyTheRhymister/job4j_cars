@@ -4,18 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2a557bb1-56a4-4907-a95e-d4255ccc06f1" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="2a557bb1-56a4-4907-a95e-d4255ccc06f1" name="Changes" comment="edit README.md">
       <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/job4j_cars/Job4jCarsApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/job4j_cars/Job4jCarsApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/job4j_cars/Main.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/job4j_cars/controller/CarController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/job4j_cars/controller/CarController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/job4j_cars/controller/HelloController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/job4j_cars/controller/HelloController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/templates/cars.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/templates/cars.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/ru/job4j_cars/controller/HelloController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/job4j_cars/controller/HelloController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/job4j_cars/model/Car.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/job4j_cars/model/Car.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/ru/job4j_cars/Job4jCarsApplicationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/ru/job4j_cars/Job4jCarsApplicationTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -113,6 +107,19 @@
       <option name="presentableId" value="Default" />
       <updated>1762724651157</updated>
     </task>
+    <task id="LOCAL-00001" summary="edit README.md">
+      <option name="closed" value="true" />
+      <created>1762798373554</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1762798373554</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="edit README.md" />
+    <option name="LAST_COMMIT_MESSAGE" value="edit README.md" />
   </component>
 </project>

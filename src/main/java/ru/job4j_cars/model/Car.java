@@ -21,12 +21,11 @@ public class Car {
     @Column(name = "production_year")
     private Integer productionYear;
 
-    private BigDecimal price;  // ИЗМЕНИЛИ ТИП
+    private BigDecimal price;
 
     @Column(name = "created_date")
     private LocalDateTime createdDate;
 
-    // Конструкторы
     public Car() {}
 
     public Car(String brand, String model, Integer productionYear, BigDecimal price) {
@@ -37,7 +36,6 @@ public class Car {
         this.createdDate = LocalDateTime.now();
     }
 
-    // Геттеры и сеттеры
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -50,8 +48,8 @@ public class Car {
     public Integer getProductionYear() { return productionYear; }
     public void setProductionYear(Integer productionYear) { this.productionYear = productionYear; }
 
-    public BigDecimal getPrice() { return price; }  // ИЗМЕНИЛИ
-    public void setPrice(BigDecimal price) { this.price = price; }  // ИЗМЕНИЛИ
+    public BigDecimal getPrice() { return price; }
+    public void setPrice(BigDecimal price) { this.price = price; }
 
     public LocalDateTime getCreatedDate() { return createdDate; }
     public void setCreatedDate(LocalDateTime createdDate) { this.createdDate = createdDate; }

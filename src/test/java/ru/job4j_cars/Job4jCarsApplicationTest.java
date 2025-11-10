@@ -9,7 +9,7 @@ class Job4jCarsApplicationTest {
 
     @Test
     void contextLoads() {
-        // Тест проверяет, что контекст Spring загружается
         assertTrue(true);
     }
 }
+/*Тест проверяет, что контекст Spring загружается*/

@@ -9,4 +9,4 @@ public class Job4jCarsApplication {
         SpringApplication.run(Job4jCarsApplication.class, args);
     }
 }
-//localhost:8080/h2-console
+/*localhost:8080/h2-console*/
