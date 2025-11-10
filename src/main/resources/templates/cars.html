@@ -14,26 +14,18 @@
 
 <div class="container mt-4">
     <h1 th:text="${pageTitle}">Автомобили</h1>
+    <p class="text-muted">Данные загружены из базы данных через Liquibase</p>
 
     <div class="row mt-4">
-        <div class="col-md-4 mb-4">
+        <div class="col-md-4 mb-4" th:each="car : ${cars}">
             <div class="card">
                 <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="Car">
                 <div class="card-body">
-                    <h5 class="card-title">Toyota Camry</h5>
-                    <p class="card-text">2022 год, 2.5 л</p>
-                    <p class="text-success"><strong>2 500 000 ₽</strong></p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="Car">
-                <div class="card-body">
-                    <h5 class="card-title">Honda Civic</h5>
-                    <p class="card-text">2021 год, 1.5 л</p>
-                    <p class="text-success"><strong>2 100 000 ₽</strong></p>
+                    <h5 class="card-title" th:text="${car.brand + ' ' + car.model}">Car Model</h5>
+                    <p class="card-text" th:text="'Год: ' + ${car.productionYear}">Год: 2022</p>
+                    <p class="text-success">
+                        <strong th:text="${#numbers.formatDecimal(car.price, 1, 2)}">2 500 000.00 ₽</strong>
+                    </p>
                 </div>
             </div>
         </div>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+<changeSet id="001-create-cars-table" author="your_name">
+    <createTable tableName="cars">
+        <column name="id" type="BIGINT" autoIncrement="true">
+            <constraints primaryKey="true" nullable="false"/>
+        </column>
+        <column name="brand" type="VARCHAR(50)">
+            <constraints nullable="false"/>
+        </column>
+        <column name="model" type="VARCHAR(50)">
+            <constraints nullable="false"/>
+        </column>
+        <column name="production_year" type="INT"/>
+        <column name="price" type="DECIMAL(10,2)"/>
+        <column name="created_date" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+    </createTable>
+
+    <createTable tableName="users">
+        <column name="id" type="BIGINT" autoIncrement="true">
+            <constraints primaryKey="true" nullable="false"/>
+        </column>
+        <column name="username" type="VARCHAR(50)">
+            <constraints nullable="false" unique="true"/>
+        </column>
+        <column name="email" type="VARCHAR(100)"/>
+        <column name="created_date" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+    </createTable>
+</changeSet>
+</databaseChangeLog>

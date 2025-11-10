@@ -8,7 +8,7 @@ public class HelloController {
 
     @GetMapping("/hello")
     public String hello() {
-        return "Hello Spring Boot from Job4j Cars!";
+        return "Hello Spring Boot from Job4j Cars! API is working!";
     }
 
     @GetMapping("/api/cars")
