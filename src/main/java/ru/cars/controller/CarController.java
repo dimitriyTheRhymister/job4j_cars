@@ -1,11 +1,11 @@
-package ru.job4j_cars.controller;
+package ru.cars.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.job4j_cars.model.Car;
-import ru.job4j_cars.repository.CarRepository;
+import ru.cars.model.Car;
+import ru.cars.repository.CarRepository;
 
 import java.util.List;
 
