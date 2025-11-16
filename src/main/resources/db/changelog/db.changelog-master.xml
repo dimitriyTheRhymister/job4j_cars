@@ -12,6 +12,10 @@
 
     <!-- DML - тестовые данные -->
     <include file="sql/004_dml_insert_sample_users.sql" relativeToChangelogFile="true"/>
+    <include file="sql/update_004.sql" relativeToChangelogFile="true"/>
     <include file="sql/005_dml_insert_sample_posts.sql" relativeToChangelogFile="true"/>
+
+    <!-- Обновление паролей -->
+    <include file="sql/update_004_2.sql" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
