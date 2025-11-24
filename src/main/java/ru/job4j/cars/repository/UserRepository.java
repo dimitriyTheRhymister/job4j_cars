@@ -1,40 +1,15 @@
 package ru.job4j.cars.repository;
 
 import lombok.AllArgsConstructor;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
 import ru.job4j.cars.model.User;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 
 @AllArgsConstructor
 public class UserRepository {
-    private final SessionFactory sf;
-
-    /**
-     * Вспомогательный метод для выполнения операций в транзакции
-     */
-    private <T> T execute(Function<Session, T> command) {
-        Session session = sf.openSession();
-        Transaction transaction = null;
-        try {
-            transaction = session.beginTransaction();
-            T result = command.apply(session);
-            transaction.commit();
-            return result;
-        } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw e;
-        } finally {
-            session.close();
-        }
-    }
+    private final CrudRepository crudRepository;
 
     /**
      * Сохранить в базе.
@@ -42,10 +17,7 @@ public class UserRepository {
      * @return пользователь с id.
      */
     public User create(User user) {
-        execute(session -> {
-            session.save(user);
-            return null;
-        });
+        crudRepository.run(session -> session.persist(user));
         return user;
     }
 
@@ -54,27 +26,18 @@ public class UserRepository {
      * @param user пользователь.
      */
     public void update(User user) {
-        execute(session -> {
-            Query query = session.createQuery(
-                    "UPDATE User SET login = :login, password = :password WHERE id = :id"
-            );
-            query.setParameter("login", user.getLogin());
-            query.setParameter("password", user.getPassword());
-            query.setParameter("id", user.getId());
-            return query.executeUpdate();  // HQL DML подход
-        });
+        crudRepository.run(session -> session.merge(user));
     }
 
     /**
      * Удалить пользователя по id.
      * @param userId ID
      */
-    public void delete(Integer userId) {
-        execute(session -> {
-            Query query = session.createQuery("DELETE User WHERE id = :id");
-            query.setParameter("id", userId);
-            return query.executeUpdate();  // HQL DML подход
-        });
+    public void delete(int userId) {
+        crudRepository.run(
+                "DELETE FROM User WHERE id = :fId",
+                Map.of("fId", userId)
+        );
     }
 
     /**
@@ -82,26 +45,18 @@ public class UserRepository {
      * @return список пользователей.
      */
     public List<User> findAllOrderById() {
-        return execute(session -> {
-            Query<User> query = session.createQuery(
-                    "FROM User ORDER BY id", User.class
-            );
-            return query.list();  // HQL подход
-        });
+        return crudRepository.query("FROM User ORDER BY id ASC", User.class);
     }
 
     /**
      * Найти пользователя по ID
      * @return пользователь.
      */
-    public Optional<User> findById(Integer userId) {
-        return execute(session -> {
-            Query<User> query = session.createQuery(
-                    "FROM User WHERE id = :id", User.class
-            );
-            query.setParameter("id", userId);
-            return query.uniqueResultOptional();  // HQL подход
-        });
+    public Optional<User> findById(int userId) {
+        return crudRepository.optional(
+                "FROM User WHERE id = :fId", User.class,
+                Map.of("fId", userId)
+        );
     }
 
     /**
@@ -110,13 +65,10 @@ public class UserRepository {
      * @return список пользователей.
      */
     public List<User> findByLikeLogin(String key) {
-        return execute(session -> {
-            Query<User> query = session.createQuery(
-                    "FROM User WHERE login LIKE :login", User.class
-            );
-            query.setParameter("login", "%" + key + "%");
-            return query.list();  // HQL подход
-        });
+        return crudRepository.query(
+                "FROM User WHERE login LIKE :fKey", User.class,
+                Map.of("fKey", "%" + key + "%")
+        );
     }
 
     /**
@@ -125,12 +77,9 @@ public class UserRepository {
      * @return Optional or user.
      */
     public Optional<User> findByLogin(String login) {
-        return execute(session -> {
-            Query<User> query = session.createQuery(
-                    "FROM User WHERE login = :login", User.class
-            );
-            query.setParameter("login", login);
-            return query.uniqueResultOptional();  // HQL подход
-        });
+        return crudRepository.optional(
+                "FROM User WHERE login = :fLogin", User.class,
+                Map.of("fLogin", login)
+        );
     }
 }
