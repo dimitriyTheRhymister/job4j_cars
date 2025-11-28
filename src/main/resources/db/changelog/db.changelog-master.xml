@@ -9,6 +9,7 @@
     <include file="sql/001_ddl_create_auto_user_table.sql" relativeToChangelogFile="true"/>
     <include file="sql/002_ddl_create_auto_post_table.sql" relativeToChangelogFile="true"/>
     <include file="sql/003_ddl_create_cars_table.sql" relativeToChangelogFile="true"/>
+    <include file="sql/004_ddl_add_table_price_history.sql" relativeToChangelogFile="true"/>
 
     <!-- DML - тестовые данные -->
     <include file="sql/004_dml_insert_sample_users.sql" relativeToChangelogFile="true"/>

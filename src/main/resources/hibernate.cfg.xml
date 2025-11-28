@@ -6,7 +6,7 @@
     <session-factory>
         <!-- Database connection settings -->
         <property name="hibernate.connection.driver_class">org.h2.Driver</property>
-        <property name="hibernate.connection.url">jdbc:h2:mem:job4j_cars;DB_CLOSE_DELAY=-1</property>
+        <property name="hibernate.connection.url">jdbc:h2:file:./db/job4j_cars;DB_CLOSE_DELAY=-1</property>
         <property name="hibernate.connection.username">sa</property>
         <property name="hibernate.connection.password"></property>
 
@@ -22,5 +22,9 @@
 
         <!-- Mention annotated classes -->
         <mapping class="ru.job4j.cars.model.User"/>
+        <mapping class="ru.job4j.cars.model.Post"/>
+        <mapping class="ru.job4j.cars.model.PriceHistory"/>
+        <mapping class="ru.job4j.cars.model.Car"/>
+        <mapping class="ru.job4j.cars.model.Engine"/>
     </session-factory>
 </hibernate-configuration>
