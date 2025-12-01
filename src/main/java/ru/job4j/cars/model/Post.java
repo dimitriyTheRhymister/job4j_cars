@@ -25,11 +25,17 @@ public class Post {
     @JoinColumn(name = "auto_user_id")
     private User user;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "car_id")
     private Car car;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "post_id")
     private List<PriceHistory> priceHistories = new ArrayList<>();
+
+    private Long currentPrice;
+
+    /* Связь Many-to-Many через промежуточную таблицу participates */
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Participates> subscribers = new ArrayList<>();
 }
