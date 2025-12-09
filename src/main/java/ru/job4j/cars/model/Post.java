@@ -25,6 +25,7 @@ public class Post {
     @JoinColumn(name = "auto_user_id")
     private User user;
 
+    // ИСПРАВЛЕНО: связь должна быть ManyToOne (одна машина в одном объявлении)
     @ManyToOne
     @JoinColumn(name = "car_id")
     private Car car;
@@ -35,7 +36,6 @@ public class Post {
 
     private Long currentPrice;
 
-    /* Связь Many-to-Many через промежуточную таблицу participates */
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participates> subscribers = new ArrayList<>();
 }

@@ -18,7 +18,7 @@
         <property name="hibernate.format_sql">true</property>
 
         <!-- Drop and re-create the database schema on startup -->
-        <property name="hibernate.hbm2ddl.auto">create</property>
+        <property name="hibernate.hbm2ddl.auto">validate</property>
 
         <!-- Mention annotated classes -->
         <mapping class="ru.job4j.cars.model.User"/>
@@ -27,5 +27,6 @@
         <mapping class="ru.job4j.cars.model.Car"/>
         <mapping class="ru.job4j.cars.model.Engine"/>
         <mapping class="ru.job4j.cars.model.Participates"/>
+        <mapping class="ru.job4j.cars.model.Owner"/>
     </session-factory>
 </hibernate-configuration>
