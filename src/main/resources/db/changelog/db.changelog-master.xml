@@ -5,22 +5,14 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
 
-    <!-- DDL - создание структуры -->
-    <include file="sql/001_ddl_create_auto_user_table.sql" relativeToChangelogFile="true"/>
-    <include file="sql/003_ddl_create_cars_table.sql" relativeToChangelogFile="true"/>
-    <include file="sql/002_ddl_create_auto_post_table.sql" relativeToChangelogFile="true"/>
-    <include file="sql/004_ddl_add_table_price_history.sql" relativeToChangelogFile="true"/>
-    <include file="sql/005_ddl_create_participates_table.sql" relativeToChangelogFile="true"/>
-    <include file="sql/006_ddl_create_owners_tables.sql" relativeToChangelogFile="true"/>
+    <!-- Все DDL в одном файле -->
+    <changeSet id="1" author="system">
+        <sqlFile path="sql/ddl_combined.sql" relativeToChangelogFile="true"/>
+    </changeSet>
 
-    <!-- DML - тестовые данные -->
-    <include file="sql/004_dml_insert_sample_users.sql" relativeToChangelogFile="true"/>
-    <include file="sql/update_004.sql" relativeToChangelogFile="true"/>
-    <include file="sql/005_dml_insert_sample_posts.sql" relativeToChangelogFile="true"/>
-
-    <!-- Обновление паролей -->
-    <include file="sql/update_004_2.sql" relativeToChangelogFile="true"/>
-
-    <include file="sql/007_dml_insert_sample_cars_and_owners.sql" relativeToChangelogFile="true"/>
+    <!-- Все DML в одном файле -->
+    <changeSet id="2" author="system">
+        <sqlFile path="sql/dml_combined.sql" relativeToChangelogFile="true"/>
+    </changeSet>
 
 </databaseChangeLog>

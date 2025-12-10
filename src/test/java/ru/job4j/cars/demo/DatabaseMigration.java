@@ -11,7 +11,7 @@ import liquibase.resource.ClassLoaderResourceAccessor;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
-public class LiquibaseRunner {
+public class DatabaseMigration {
     public static void main(String[] args) {
         Connection connection = null;
         try {
@@ -41,7 +41,7 @@ public class LiquibaseRunner {
             // 4. Проверяем комментарии
             checkComments(connection);
 
-            System.out.println("\n✓ Теперь можно запускать H2DatabaseDemo!");
+            System.out.println("\n✓ Теперь можно запускать TestDataGenerator!");
 
         } catch (Exception e) {
             e.printStackTrace();

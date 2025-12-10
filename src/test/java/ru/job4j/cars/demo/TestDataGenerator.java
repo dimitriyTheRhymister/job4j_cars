@@ -9,7 +9,7 @@ import ru.job4j.cars.repository.CrudRepository;
 
 import java.util.Set;
 
-public class H2DatabaseDemo {
+public class TestDataGenerator {
 
     public static void main(String[] args) {
         StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
@@ -20,6 +20,9 @@ public class H2DatabaseDemo {
 
             var crudRepository = new CrudRepository(sf);
             executeDemo(crudRepository);
+
+            System.out.println("\n✓ Теперь можно запускать RepositoryTestSuite!");
+            System.out.println("✓ Или сразу запускать H2WebConsoleStarter!");
 
         } finally {
             StandardServiceRegistryBuilder.destroy(registry);
@@ -244,7 +247,7 @@ public class H2DatabaseDemo {
         System.out.println("\n=== ПОЛЬЗОВАТЕЛИ ===");
         session.createQuery("FROM User ORDER BY id", User.class)
                 .list()
-                .forEach(H2DatabaseDemo::printUserInfo);
+                .forEach(TestDataGenerator::printUserInfo);
     }
 
     private static void printUserInfo(User user) {
@@ -255,7 +258,7 @@ public class H2DatabaseDemo {
         System.out.println("\n=== ДВИГАТЕЛИ ===");
         session.createQuery("FROM Engine ORDER BY id", Engine.class)
                 .list()
-                .forEach(H2DatabaseDemo::printEngineInfo);
+                .forEach(TestDataGenerator::printEngineInfo);
     }
 
     private static void printEngineInfo(Engine engine) {
@@ -270,7 +273,7 @@ public class H2DatabaseDemo {
         System.out.println("\n=== МАШИНЫ С ВЛАДЕЛЬЦАМИ ===");
         session.createQuery("SELECT DISTINCT c FROM Car c JOIN FETCH c.engine LEFT JOIN FETCH c.owners ORDER BY c.id", Car.class)
                 .list()
-                .forEach(H2DatabaseDemo::printCarInfo);
+                .forEach(TestDataGenerator::printCarInfo);
     }
 
     private static void printCarInfo(Car car) {
@@ -297,7 +300,7 @@ public class H2DatabaseDemo {
         System.out.println("\n=== ВЛАДЕЛЬЦЫ ===");
         session.createQuery("SELECT DISTINCT o FROM Owner o LEFT JOIN FETCH o.user LEFT JOIN FETCH o.cars ORDER BY o.id", Owner.class)
                 .list()
-                .forEach(H2DatabaseDemo::printOwnerInfo);
+                .forEach(TestDataGenerator::printOwnerInfo);
     }
 
     private static void printOwnerInfo(Owner owner) {
@@ -321,7 +324,7 @@ public class H2DatabaseDemo {
         System.out.println("\n=== ОБЪЯВЛЕНИЯ С ИСТОРИЕЙ ЦЕН ===");
         session.createQuery("SELECT DISTINCT p FROM Post p JOIN FETCH p.user JOIN FETCH p.car ORDER BY p.id", Post.class)
                 .list()
-                .forEach(H2DatabaseDemo::printPostInfo);
+                .forEach(TestDataGenerator::printPostInfo);
     }
 
     private static void printPostInfo(Post post) {
@@ -343,7 +346,7 @@ public class H2DatabaseDemo {
     private static void displayPriceHistory(Post post) {
         if (!post.getPriceHistories().isEmpty()) {
             System.out.println("  История изменений цены:");
-            post.getPriceHistories().forEach(H2DatabaseDemo::printPriceChange);
+            post.getPriceHistories().forEach(TestDataGenerator::printPriceChange);
         }
     }
 
