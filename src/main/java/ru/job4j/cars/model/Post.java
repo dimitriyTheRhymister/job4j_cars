@@ -41,10 +41,10 @@ public class Post {
     private List<Participates> subscribers = new ArrayList<>();
 
     // ДОБАВЛЕНО: Поле для хранения фото (URL-адреса изображений)
-    @ElementCollection(fetch = FetchType.EAGER)  // ИЛИ LAZY с JOIN FETCH в запросах
+    // ИЗМЕНЕНО: LAZY вместо EAGER
+    @ElementCollection(fetch = FetchType.LAZY)  // Ленивая загрузка
     @CollectionTable(name = "post_photos", joinColumns = @JoinColumn(name = "post_id"))
     @Column(name = "photo_url")
-    @Fetch(FetchMode.JOIN)  // Важно для предотвращения N+1 проблемы
     private List<String> photoUrls = new ArrayList<>();
 
     /**

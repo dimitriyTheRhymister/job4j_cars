@@ -42,7 +42,7 @@ public class PostRepository {
     }
 
     /**
-     * Найти объявление по ID
+     * Найти объявление по ID (БЕЗ фото для производительности)
      * @param postId ID
      * @return объявление.
      */
@@ -51,7 +51,6 @@ public class PostRepository {
                 "SELECT DISTINCT p FROM Post p "
                         + "JOIN FETCH p.user "
                         + "JOIN FETCH p.car "
-                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE p.id = :fId",
                 Post.class,
                 Map.of("fId", postId)
@@ -59,7 +58,24 @@ public class PostRepository {
     }
 
     /**
-     * Список всех объявлений отсортированных по id.
+     * Найти объявление по ID С фото (когда фото нужны)
+     * @param postId ID
+     * @return объявление с фото.
+     */
+    public Optional<Post> findByIdWithPhotos(int postId) {
+        return crudRepository.optional(
+                "SELECT DISTINCT p FROM Post p "
+                        + "JOIN FETCH p.user "
+                        + "JOIN FETCH p.car "
+                        + "LEFT JOIN FETCH p.photoUrls "  // ✅ Только здесь!
+                        + "WHERE p.id = :fId",
+                Post.class,
+                Map.of("fId", postId)
+        );
+    }
+
+    /**
+     * Список всех объявлений отсортированных по id (БЕЗ фото)
      * @return список объявлений.
      */
     public List<Post> findAllOrderById() {
@@ -67,14 +83,13 @@ public class PostRepository {
                 "SELECT DISTINCT p FROM Post p "
                         + "JOIN FETCH p.user "
                         + "JOIN FETCH p.car "
-                        + "LEFT JOIN FETCH p.photoUrls "
                         + "ORDER BY p.id ASC",
                 Post.class
         );
     }
 
     /**
-     * Список всех объявлений отсортированных по дате (новые сначала).
+     * Список всех объявлений отсортированных по дате (новые сначала) БЕЗ фото
      * @return список объявлений.
      */
     public List<Post> findAllOrderByCreatedDesc() {
@@ -82,14 +97,28 @@ public class PostRepository {
                 "SELECT DISTINCT p FROM Post p "
                         + "JOIN FETCH p.user "
                         + "JOIN FETCH p.car "
-                        + "LEFT JOIN FETCH p.photoUrls "
                         + "ORDER BY p.created DESC",
                 Post.class
         );
     }
 
     /**
-     * Показать объявления за последний день.
+     * Список всех объявлений С фото (когда нужны фото)
+     * @return список объявлений с фото.
+     */
+    public List<Post> findAllOrderByCreatedDescWithPhotos() {
+        return crudRepository.query(
+                "SELECT DISTINCT p FROM Post p "
+                        + "JOIN FETCH p.user "
+                        + "JOIN FETCH p.car "
+                        + "LEFT JOIN FETCH p.photoUrls "  // ✅ Только здесь!
+                        + "ORDER BY p.created DESC",
+                Post.class
+        );
+    }
+
+    /**
+     * Показать объявления за последний день (БЕЗ фото)
      * @return список объявлений за последние 24 часа.
      */
     public List<Post> findPostsFromLastDay() {
@@ -98,7 +127,6 @@ public class PostRepository {
                 "SELECT DISTINCT p FROM Post p "
                         + "JOIN FETCH p.user "
                         + "JOIN FETCH p.car "
-                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE p.created >= :fYesterday "
                         + "ORDER BY p.created DESC",
                 Post.class,
@@ -107,7 +135,7 @@ public class PostRepository {
     }
 
     /**
-     * Показать объявления за последние N дней.
+     * Показать объявления за последние N дней (БЕЗ фото)
      * @param days количество дней
      * @return список объявлений
      */
@@ -117,7 +145,6 @@ public class PostRepository {
                 "SELECT DISTINCT p FROM Post p "
                         + "JOIN FETCH p.user "
                         + "JOIN FETCH p.car "
-                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE p.created >= :fDateFrom "
                         + "ORDER BY p.created DESC",
                 Post.class,
@@ -135,7 +162,6 @@ public class PostRepository {
                 "SELECT DISTINCT p FROM Post p "
                         + "JOIN FETCH p.user "
                         + "JOIN FETCH p.car "
-                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE SIZE(p.photoUrls) > 0 "
                         + "ORDER BY p.created DESC",
                 Post.class
@@ -151,7 +177,6 @@ public class PostRepository {
                 "SELECT DISTINCT p FROM Post p "
                         + "JOIN FETCH p.user "
                         + "JOIN FETCH p.car "
-                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE SIZE(p.photoUrls) = 0 "
                         + "ORDER BY p.created DESC",
                 Post.class
@@ -159,7 +184,7 @@ public class PostRepository {
     }
 
     /**
-     * Показать объявления определенной марки автомобиля.
+     * Показать объявления определенной марки автомобиля (БЕЗ фото)
      * @param brand марка автомобиля (например, "Toyota").
      * @return список объявлений с указанной маркой.
      */
@@ -168,7 +193,6 @@ public class PostRepository {
                 "SELECT DISTINCT p FROM Post p "
                         + "JOIN FETCH p.user "
                         + "JOIN FETCH p.car c "
-                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE UPPER(c.name) = UPPER(:fBrand) "
                         + "ORDER BY p.created DESC",
                 Post.class,
@@ -177,7 +201,7 @@ public class PostRepository {
     }
 
     /**
-     * Показать объявления определенной модели автомобиля.
+     * Показать объявления определенной модели автомобиля (БЕЗ фото)
      * @param model модель автомобиля (например, "Camry").
      * @return список объявлений с указанной моделью.
      */
@@ -186,7 +210,6 @@ public class PostRepository {
                 "SELECT DISTINCT p FROM Post p "
                         + "JOIN FETCH p.user "
                         + "JOIN FETCH p.car c "
-                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE UPPER(c.model) = UPPER(:fModel) "
                         + "ORDER BY p.created DESC",
                 Post.class,
@@ -195,7 +218,7 @@ public class PostRepository {
     }
 
     /**
-     * Показать объявления по марке и модели.
+     * Показать объявления по марке и модели (БЕЗ фото)
      * @param brand марка автомобиля
      * @param model модель автомобиля
      * @return список объявлений
@@ -205,7 +228,6 @@ public class PostRepository {
                 "SELECT DISTINCT p FROM Post p "
                         + "JOIN FETCH p.user "
                         + "JOIN FETCH p.car c "
-                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE UPPER(c.name) = UPPER(:fBrand) AND UPPER(c.model) = UPPER(:fModel) "
                         + "ORDER BY p.created DESC",
                 Post.class,
@@ -214,7 +236,7 @@ public class PostRepository {
     }
 
     /**
-     * Показать объявления по ID пользователя.
+     * Показать объявления по ID пользователя (БЕЗ фото)
      * @param userId ID пользователя.
      * @return список объявлений пользователя.
      */
@@ -223,7 +245,6 @@ public class PostRepository {
                 "SELECT DISTINCT p FROM Post p "
                         + "JOIN FETCH p.user "
                         + "JOIN FETCH p.car "
-                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE p.user.id = :fUserId "
                         + "ORDER BY p.created DESC",
                 Post.class,
@@ -232,7 +253,7 @@ public class PostRepository {
     }
 
     /**
-     * Показать объявления с ценой в диапазоне.
+     * Показать объявления с ценой в диапазоне (БЕЗ фото)
      * @param minPrice минимальная цена.
      * @param maxPrice максимальная цена.
      * @return список объявлений.
@@ -242,7 +263,6 @@ public class PostRepository {
                 "SELECT DISTINCT p FROM Post p "
                         + "JOIN FETCH p.user "
                         + "JOIN FETCH p.car "
-                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE p.currentPrice BETWEEN :fMinPrice AND :fMaxPrice "
                         + "ORDER BY p.currentPrice ASC",
                 Post.class,
@@ -251,7 +271,7 @@ public class PostRepository {
     }
 
     /**
-     * Показать объявления дешевле указанной цены.
+     * Показать объявления дешевле указанной цены (БЕЗ фото)
      * @param maxPrice максимальная цена.
      * @return список объявлений.
      */
@@ -260,7 +280,6 @@ public class PostRepository {
                 "SELECT DISTINCT p FROM Post p "
                         + "JOIN FETCH p.user "
                         + "JOIN FETCH p.car "
-                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE p.currentPrice <= :fMaxPrice "
                         + "ORDER BY p.currentPrice ASC",
                 Post.class,
@@ -269,7 +288,7 @@ public class PostRepository {
     }
 
     /**
-     * Показать объявления дороже указанной цены.
+     * Показать объявления дороже указанной цены (БЕЗ фото)
      * @param minPrice минимальная цена.
      * @return список объявлений.
      */
@@ -278,7 +297,6 @@ public class PostRepository {
                 "SELECT DISTINCT p FROM Post p "
                         + "JOIN FETCH p.user "
                         + "JOIN FETCH p.car "
-                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE p.currentPrice >= :fMinPrice "
                         + "ORDER BY p.currentPrice DESC",
                 Post.class,
@@ -287,18 +305,16 @@ public class PostRepository {
     }
 
     /**
-     * Поиск объявлений по ключевым словам в описании.
+     * Поиск объявлений по ключевым словам в описании (БЕЗ фото)
      * @param keyword ключевое слово.
      * @return список объявлений.
      */
     public List<Post> searchByKeyword(String keyword) {
-        String searchPattern = "%"
-                + "%";
+        String searchPattern = "%" + keyword.toLowerCase() + "%";
         return crudRepository.query(
                 "SELECT DISTINCT p FROM Post p "
                         + "JOIN FETCH p.user "
                         + "JOIN FETCH p.car "
-                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE LOWER(p.description) LIKE :fKeyword "
                         + "ORDER BY p.created DESC",
                 Post.class,
@@ -307,7 +323,7 @@ public class PostRepository {
     }
 
     /**
-     * Показать объявления с определенным годом выпуска автомобиля.
+     * Показать объявления с определенным годом выпуска автомобиля (БЕЗ фото)
      * @param year год выпуска.
      * @return список объявлений.
      */
@@ -316,7 +332,6 @@ public class PostRepository {
                 "SELECT DISTINCT p FROM Post p "
                         + "JOIN FETCH p.user "
                         + "JOIN FETCH p.car c "
-                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE c.manufactureYear = :fYear "
                         + "ORDER BY p.created DESC",
                 Post.class,
@@ -325,7 +340,7 @@ public class PostRepository {
     }
 
     /**
-     * Показать объявления с автомобилями новее указанного года.
+     * Показать объявления с автомобилями новее указанного года (БЕЗ фото)
      * @param minYear минимальный год выпуска.
      * @return список объявлений.
      */
@@ -334,7 +349,6 @@ public class PostRepository {
                 "SELECT DISTINCT p FROM Post p "
                         + "JOIN FETCH p.user "
                         + "JOIN FETCH p.car c "
-                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE c.manufactureYear >= :fMinYear "
                         + "ORDER BY c.manufactureYear DESC, p.created DESC",
                 Post.class,
@@ -343,7 +357,7 @@ public class PostRepository {
     }
 
     /**
-     * Показать объявления за последний час (для тестирования).
+     * Показать объявления за последний час (для тестирования) БЕЗ фото
      * @return список объявлений за последний час.
      */
     public List<Post> findPostsFromLastHour() {
@@ -352,7 +366,6 @@ public class PostRepository {
                 "SELECT DISTINCT p FROM Post p "
                         + "JOIN FETCH p.user "
                         + "JOIN FETCH p.car "
-                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE p.created >= :fHourAgo "
                         + "ORDER BY p.created DESC",
                 Post.class,
@@ -361,7 +374,7 @@ public class PostRepository {
     }
 
     /**
-     * Показать объявления с фото определенного пользователя.
+     * Показать объявления с фото определенного пользователя
      * @param userId ID пользователя
      * @return список объявлений с фото
      */
@@ -370,7 +383,6 @@ public class PostRepository {
                 "SELECT DISTINCT p FROM Post p "
                         + "JOIN FETCH p.user "
                         + "JOIN FETCH p.car "
-                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE SIZE(p.photoUrls) > 0 AND p.user.id = :fUserId "
                         + "ORDER BY p.created DESC",
                 Post.class,
@@ -435,5 +447,46 @@ public class PostRepository {
                 Long.class,
                 Map.of("fUserId", userId)
         ).get(0);
+    }
+
+    /**
+     * НОВЫЙ МЕТОД: Получить фото конкретного объявления (ленивая загрузка по требованию)
+     * @param postId ID объявления
+     * @return список фото URL
+     */
+    public List<String> getPhotosByPostId(int postId) {
+        return crudRepository.query(
+                "SELECT p.photoUrls FROM Post p WHERE p.id = :fPostId",
+                List.class,
+                Map.of("fPostId", postId)
+        ).get(0);
+    }
+
+    /**
+     * НОВЫЙ МЕТОД: Добавить фото к объявлению
+     * @param postId ID объявления
+     * @param photoUrl URL фото
+     */
+    public void addPhotoToPost(int postId, String photoUrl) {
+        crudRepository.run(session -> {
+            Post post = session.find(Post.class, postId);
+            if (post != null) {
+                post.addPhoto(photoUrl);
+            }
+        });
+    }
+
+    /**
+     * НОВЫЙ МЕТОД: Удалить фото из объявления
+     * @param postId ID объявления
+     * @param photoUrl URL фото
+     */
+    public void removePhotoFromPost(int postId, String photoUrl) {
+        crudRepository.run(session -> {
+            Post post = session.find(Post.class, postId);
+            if (post != null) {
+                post.removePhoto(photoUrl);
+            }
+        });
     }
 }

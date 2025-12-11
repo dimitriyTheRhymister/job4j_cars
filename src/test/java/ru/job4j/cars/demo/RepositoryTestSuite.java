@@ -211,23 +211,23 @@ public class RepositoryTestSuite {
         System.out.println("ТЕСТ 5: PostRepository");
         System.out.println("=".repeat(40));
 
-        System.out.println("1. Все объявления (по убыванию даты):");
+        System.out.println("1. Все объявления (по убыванию даты) БЕЗ фото:");
         List<Post> posts = repo.findAllOrderByCreatedDesc();
         if (posts.isEmpty()) {
             System.out.println("   (нет объявлений)");
         } else {
             posts.forEach(p -> {
-                int photoCount = p.getPhotoUrls() != null ? p.getPhotoUrls().size() : 0;
-                System.out.printf("   ID: %d | Автор: %s | %s... | Фото: %d | Создано: %s%n",
+                // Фото НЕ загружены (LAZY) - НЕ используем метод hasPhotos()
+                // Просто показываем информацию без проверки фото
+                System.out.printf("   ID: %d | Автор: %s | %s... | Создано: %s%n",
                         p.getId(),
                         p.getUser() != null ? p.getUser().getLogin() : "нет",
                         p.getDescription().substring(0, Math.min(30, p.getDescription().length())),
-                        photoCount,
                         p.getCreated());
             });
         }
 
-        System.out.println("\n2. Объявления с фото:");
+        System.out.println("\n2. Объявления с фото (отдельный запрос):");
         List<Post> withPhotos = repo.findPostsWithPhotos();
         System.out.printf("   Найдено: %d объявлений с фото%n", withPhotos.size());
 
@@ -239,15 +239,50 @@ public class RepositoryTestSuite {
         List<Post> lastDay = repo.findPostsFromLastDay();
         System.out.printf("   Найдено: %d объявлений за последний день%n", lastDay.size());
 
-        // НЕ добавляем новые фото! Только проверяем существующие
-        System.out.println("\n5. Проверка фото в объявлениях:");
-        Optional<Post> post1 = repo.findById(1);
-        if (post1.isPresent()) {
-            Post p = post1.get();
+        System.out.println("\n5. Объявления БЕЗ фото:");
+        List<Post> withoutPhotos = repo.findPostsWithoutPhotos();
+        System.out.printf("   Найдено: %d объявлений без фото%n", withoutPhotos.size());
+
+        System.out.println("\n6. Объявления дешевле 1.5 млн:");
+        List<Post> cheapPosts = repo.findPostsCheaperThan(1500000L);
+        System.out.printf("   Найдено: %d объявлений дешевле 1.5 млн%n", cheapPosts.size());
+
+        System.out.println("\n7. Объявления с автомобилями новее 2019 года:");
+        List<Post> newCarsPosts = repo.findPostsByCarYearGreaterThan(2019);
+        System.out.printf("   Найдено: %d объявлений с авто новее 2019 года%n", newCarsPosts.size());
+
+        // Проверка методов с фото (используем findByIdWithPhotos)
+        System.out.println("\n8. Проверка фото в объявлениях (с загрузкой фото):");
+        Optional<Post> postWithPhotos = repo.findByIdWithPhotos(1);
+        if (postWithPhotos.isPresent()) {
+            Post p = postWithPhotos.get();
             int existingPhotos = p.getPhotoUrls() != null ? p.getPhotoUrls().size() : 0;
             System.out.printf("   Объявление ID: %d имеет %d фото%n", p.getId(), existingPhotos);
+
+            // Покажем URL фото если они есть
+            if (existingPhotos > 0) {
+                System.out.println("   URL фото:");
+                p.getPhotoUrls().forEach(url ->
+                        System.out.printf("      - %s%n", url));
+            }
         } else {
             System.out.println("   Объявление ID: 1 не найдено");
+        }
+
+        // ИЛИ проще: используем метод с JOIN FETCH для списка
+        System.out.println("\n9. Все объявления С фото (для отображения):");
+        List<Post> postsWithPhotosList = repo.findAllOrderByCreatedDescWithPhotos();
+        if (!postsWithPhotosList.isEmpty()) {
+            postsWithPhotosList.forEach(p -> {
+                int photoCount = p.getPhotoUrls() != null ? p.getPhotoUrls().size() : 0;
+                System.out.printf("   ID: %d | Автор: %s | Фото: %d | %s...%n",
+                        p.getId(),
+                        p.getUser() != null ? p.getUser().getLogin() : "нет",
+                        photoCount,
+                        p.getDescription().substring(0, Math.min(30, p.getDescription().length())));
+            });
+        } else {
+            System.out.println("   (нет объявлений с фото для отображения)");
         }
     }
 
@@ -263,7 +298,8 @@ public class RepositoryTestSuite {
             System.out.println("   (нет записей истории цен)");
         } else {
             System.out.printf("   Всего записей: %d%n", histories.size());
-            histories.forEach(ph -> {
+            // Покажем только первые 5 для краткости
+            histories.stream().limit(5).forEach(ph -> {
                 Post p = ph.getPost();
                 System.out.printf("   ID: %d | Пост ID: %s | Было: %,d | Стало: %,d | Дата: %s%n",
                         ph.getId(),
@@ -272,9 +308,10 @@ public class RepositoryTestSuite {
                         ph.getAfter(),
                         ph.getCreated());
             });
+            if (histories.size() > 5) {
+                System.out.printf("   ... и ещё %d записей%n", histories.size() - 5);
+            }
         }
-
-        // НЕ создаём новые записи! Только читаем существующие
     }
 
     private static void testParticipatesRepository(ParticipatesRepository repo,
@@ -309,7 +346,16 @@ public class RepositoryTestSuite {
                     post1.get().getId(), count);
         }
 
-        // НЕ создаём новые подписки! Только читаем существующие
+        // Тестируем проверку подписки
+        System.out.println("\nПроверка подписок пользователей:");
+        Optional<User> ivanov = userRepo.findByLogin("ivanov");
+        Optional<Post> firstPost = postRepo.findById(1);
+
+        if (ivanov.isPresent() && firstPost.isPresent()) {
+            boolean isSubscribed = repo.isSubscribed(ivanov.get(), firstPost.get());
+            System.out.printf("   Пользователь 'ivanov' подписан на пост ID:1? %s%n",
+                    isSubscribed ? "✅ Да" : "❌ Нет");
+        }
     }
 
     private static void testComplexQueries(PostRepository postRepo,
@@ -324,19 +370,24 @@ public class RepositoryTestSuite {
         long totalCars = carRepo.findAllOrderById().size();
         long totalPosts = postRepo.countAllPosts();
         long postsWithPhotos = postRepo.countPostsWithPhotos();
+        long postsWithoutPhotos = postRepo.countPostsWithoutPhotos();
 
         System.out.printf("   👥 Пользователей: %d%n", totalUsers);
         System.out.printf("   🚗 Автомобилей: %d%n", totalCars);
         System.out.printf("   📝 Объявлений: %d%n", totalPosts);
         System.out.printf("   📸 Объявлений с фото: %d (%.1f%%)%n",
                 postsWithPhotos, totalPosts > 0 ? (postsWithPhotos * 100.0 / totalPosts) : 0);
+        System.out.printf("   📭 Объявлений без фото: %d (%.1f%%)%n",
+                postsWithoutPhotos, totalPosts > 0 ? (postsWithoutPhotos * 100.0 / totalPosts) : 0);
 
-        System.out.println("\n2. Объявления с полной информацией:");
-        List<Post> posts = postRepo.findAllOrderByCreatedDesc();
+        System.out.println("\n2. Объявления с полной информацией (используем метод С фото):");
+        List<Post> posts = postRepo.findAllOrderByCreatedDescWithPhotos();
         if (posts.isEmpty()) {
             System.out.println("   (нет объявлений)");
         } else {
-            posts.forEach(p -> {
+            System.out.printf("   Всего объявлений для отображения: %d%n", posts.size());
+            // Покажем только первые 3 для краткости
+            posts.stream().limit(3).forEach(p -> {
                 Car car = p.getCar();
                 User user = p.getUser();
                 int photoCount = p.getPhotoUrls() != null ? p.getPhotoUrls().size() : 0;
@@ -351,14 +402,27 @@ public class RepositoryTestSuite {
                         car != null ? car.getManufactureYear() : 0);
                 System.out.printf("      ⚙️  Двигатель: %s%n",
                         car != null && car.getEngine() != null ? car.getEngine().getName() : "нет данных");
+                System.out.printf("      💰 Цена: %,d руб.%n",
+                        p.getCurrentPrice() != null ? p.getCurrentPrice() : 0);
                 System.out.printf("      📄 Описание: %s...%n",
                         p.getDescription().substring(0, Math.min(50, p.getDescription().length())));
-                System.out.printf("      🖼  Фото: %d | 📅 Создано: %s%n",
+                System.out.printf("      🖼  Фото: %d шт. | 📅 Создано: %s%n",
                         photoCount, p.getCreated());
                 System.out.println();
             });
+            if (posts.size() > 3) {
+                System.out.printf("   ... и ещё %d объявлений%n", posts.size() - 3);
+            }
         }
 
-        System.out.println("✅ Все тесты выполнены успешно!");
+        System.out.println("\n3. Расширенная статистика по пользователям:");
+        userRepo.findAllOrderById().forEach(user -> {
+            long userPostsCount = postRepo.countPostsByUserId(user.getId());
+            long userPostsWithPhotos = postRepo.countPostsWithPhotosByUserId(user.getId());
+            System.out.printf("   👤 %s (ID:%d): %d объявлений (%d с фото)%n",
+                    user.getLogin(), user.getId(), userPostsCount, userPostsWithPhotos);
+        });
+
+        System.out.println("\n✅ Все тесты выполнены успешно!");
     }
 }

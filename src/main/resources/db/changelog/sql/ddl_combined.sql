@@ -33,7 +33,7 @@ CREATE TABLE cars (
     name VARCHAR(100) NOT NULL,
     model VARCHAR(50),
     manufacture_year INT,
-    engine_id INT NOT NULL UNIQUE REFERENCES engines(id)
+    engine_id INT NOT NULL REFERENCES engines(id)
 );
 
 COMMENT ON TABLE cars IS 'Таблица автомобилей';
