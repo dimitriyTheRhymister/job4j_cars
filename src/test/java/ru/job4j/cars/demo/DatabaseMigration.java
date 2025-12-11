@@ -8,11 +8,15 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
 public class DatabaseMigration {
     public static void main(String[] args) {
+        // УДАЛЯЕМ СТАРЫЕ ФАЙЛЫ ПЕРЕД КАЖДЫМ ЗАПУСКОМ
+        cleanDatabaseFiles();
+
         Connection connection = null;
         try {
             // 1. Подключаемся к БД
@@ -50,6 +54,20 @@ public class DatabaseMigration {
             if (connection != null) {
                 try { connection.close(); } catch (Exception e) { e.printStackTrace(); }
             }
+        }
+    }
+
+    private static void cleanDatabaseFiles() {
+        File mvFile = new File("./db/job4j_cars.mv.db");
+        File traceFile = new File("./db/job4j_cars.trace.db");
+
+        if (mvFile.exists()) mvFile.delete();
+        if (traceFile.exists()) traceFile.delete();
+
+        // Если папка db не существует - создаем
+        File dbDir = new File("./db");
+        if (!dbDir.exists()) {
+            dbDir.mkdirs();
         }
     }
 

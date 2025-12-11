@@ -37,11 +37,6 @@ public class TestDataGenerator {
             // Выводим точную статистику
             displayDatabaseStats(crudRepository);
 
-            System.out.println("\n📋 Дальнейшие действия:");
-            System.out.println("   1. 🧪 Запустить RepositoryTestSuite для тестирования");
-            System.out.println("   2. 🌐 Запустить H2WebConsoleStarter для просмотра данных");
-            System.out.println("\n💡 Совет: Для принудительной очистки базы запустите с параметром --clear");
-
         } finally {
             StandardServiceRegistryBuilder.destroy(registry);
         }

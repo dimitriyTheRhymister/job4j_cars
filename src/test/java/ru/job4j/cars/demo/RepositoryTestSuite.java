@@ -82,8 +82,6 @@ public class RepositoryTestSuite {
             System.out.println("\n" + "=".repeat(60));
             System.out.println("   ✅ RepositoryTestSuite УСПЕШНО ЗАВЕРШЁН!");
             System.out.println("=".repeat(60));
-            System.out.println("\n💡 Теперь можете запустить H2WebConsoleStarter для просмотра данных:");
-            System.out.println("   mvn compile exec:java -Dexec.mainClass=\"ru.job4j.cars.demo.H2WebConsoleStarter\"");
 
         } catch (Exception e) {
             System.err.println("\n❌ Ошибка в RepositoryTestSuite:");
