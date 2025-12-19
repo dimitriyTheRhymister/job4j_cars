@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Редактировать объявление - Auto Market</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        .photo-preview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            margin: 5px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        .photo-preview:hover {
+            border-color: #0d6efd;
+        }
+        .current-photos {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .status-buttons {
+            border-top: 1px solid #dee2e6;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="bi bi-car-front"></i> Auto Market
+        </a>
+        <a class="btn btn-outline-light" th:href="@{/posts/{id}(id=${postId})}">
+            <i class="bi bi-arrow-left"></i> Назад к объявлению
+        </a>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h4 class="mb-0">
+                        <i class="bi bi-pencil"></i> Редактировать объявление
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Форма редактирования -->
+                    <form th:action="@{/posts/{id}/edit(id=${postId})}"
+                          method="post"
+                          enctype="multipart/form-data"
+                          th:object="${postDto}">
+
+                        <!-- Текущие фотографии -->
+                        <div class="current-photos" th:if="${currentPhotos != null and not currentPhotos.empty}">
+                            <h6>Текущие фотографии:</h6>
+                            <div class="d-flex flex-wrap">
+                                <div th:each="photo : ${currentPhotos}" class="position-relative">
+                                    <img th:src="${photo}" class="photo-preview">
+                                    <button type="button"
+                                            class="btn btn-danger btn-sm position-absolute top-0 end-0"
+                                            onclick="deletePhoto(this, '[[${photo}]]')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <small class="text-muted">Кликните на крестик для удаления</small>
+                        </div>
+
+                        <!-- Описание -->
+                        <div class="mb-3">
+                            <label class="form-label">Описание *</label>
+                            <textarea class="form-control"
+                                      th:field="*{description}"
+                                      rows="4"
+                                      placeholder="Опишите автомобиль..."
+                                      required></textarea>
+                            <div class="text-danger"
+                                 th:if="${#fields.hasErrors('description')}"
+                                 th:errors="*{description}"></div>
+                        </div>
+
+                        <!-- Цена и пробег -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Цена (руб.) *</label>
+                                <input type="number"
+                                       class="form-control"
+                                       th:field="*{price}"
+                                       min="1"
+                                       placeholder="1000000"
+                                       required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Пробег (км) *</label>
+                                <input type="number"
+                                       class="form-control"
+                                       th:field="*{mileage}"
+                                       min="0"
+                                       placeholder="50000"
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- Марка и модель -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Марка *</label>
+                                <select class="form-select"
+                                        th:field="*{brand}"
+                                        required>
+                                    <option value="">Выберите марку</option>
+                                    <option th:each="brand : ${brands}"
+                                            th:value="${brand}"
+                                            th:text="${brand}"
+                                            th:selected="${brand == postDto.brand}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Модель *</label>
+                                <input type="text"
+                                       class="form-control"
+                                       th:field="*{model}"
+                                       placeholder="Camry, Civic и т.д."
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- Год, кузов, категория -->
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Год выпуска *</label>
+                                <input type="number"
+                                       class="form-control"
+                                       th:field="*{manufactureYear}"
+                                       min="1900"
+                                       max="2024"
+                                       placeholder="2020"
+                                       required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Тип кузова *</label>
+                                <select class="form-select"
+                                        th:field="*{bodyType}"
+                                        required>
+                                    <option value="">Выберите тип</option>
+                                    <option th:each="type : ${bodyTypes}"
+                                            th:value="${type}"
+                                            th:text="${type}"
+                                            th:selected="${type == postDto.bodyType}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Категория</label>
+                                <select class="form-select"
+                                        th:field="*{category}">
+                                    <option value="">Выберите категорию</option>
+                                    <option th:each="cat : ${categories}"
+                                            th:value="${cat}"
+                                            th:text="${cat}"
+                                            th:selected="${cat == postDto.category}"></option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Двигатель, коробка, цвет -->
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Тип двигателя *</label>
+                                <select class="form-select"
+                                        th:field="*{engineType}"
+                                        required>
+                                    <option value="">Выберите тип</option>
+                                    <option th:each="type : ${engineTypes}"
+                                            th:value="${type}"
+                                            th:text="${type}"
+                                            th:selected="${type == postDto.engineType}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Коробка передач *</label>
+                                <select class="form-select"
+                                        th:field="*{transmission}"
+                                        required>
+                                    <option value="">Выберите коробку</option>
+                                    <option th:each="trans : ${transmissions}"
+                                            th:value="${trans}"
+                                            th:text="${trans}"
+                                            th:selected="${trans == postDto.transmission}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Цвет</label>
+                                <select class="form-select"
+                                        th:field="*{color}">
+                                    <option value="">Выберите цвет</option>
+                                    <option th:each="color : ${colors}"
+                                            th:value="${color}"
+                                            th:text="${color}"
+                                            th:selected="${color == postDto.color}"></option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Двигатель -->
+                        <div class="mb-3">
+                            <label class="form-label">Двигатель *</label>
+                            <select class="form-select"
+                                    th:field="*{engineId}"
+                                    required>
+                                <option value="">Выберите двигатель</option>
+                                <option th:each="engine : ${engines}"
+                                        th:value="${engine.id}"
+                                        th:text="${engine.name + ' (' + engine.volume + ' л, ' + engine.power + ' л.с.)'}"
+                                        th:selected="${engine.id == postDto.engineId}"></option>
+                            </select>
+                        </div>
+
+                        <!-- Новые фотографии -->
+                        <div class="mb-3">
+                            <label class="form-label">Добавить фотографии</label>
+                            <input type="file"
+                                   class="form-control"
+                                   name="newPhotos"
+                                   multiple
+                                   accept="image/*">
+                            <small class="form-text text-muted">
+                                Можно загрузить дополнительные фотографии. Максимальный размер файла: 5MB
+                            </small>
+                        </div>
+
+                        <!-- Основные кнопки -->
+                        <div class="d-grid gap-2 mb-4">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-check-circle"></i> Сохранить изменения
+                            </button>
+                            <a th:href="@{/posts/{id}(id=${postId})}"
+                               class="btn btn-outline-secondary">
+                                Отмена
+                            </a>
+                        </div>
+
+                        <!-- КНОПКИ ИЗМЕНЕНИЯ СТАТУСА -->
+                        <div class="status-buttons">
+                            <h6>Управление статусом:</h6>
+
+                            <!-- АКТИВНОЕ объявление -->
+                            <div th:if="${currentStatus.name() == 'ACTIVE'}" class="btn-group" role="group">
+                                <!-- Продано -->
+                                <form th:action="@{/posts/{id}/sell(id=${postId})}"
+                                      method="post"
+                                      class="me-2">
+                                    <button type="submit"
+                                            class="btn btn-danger"
+                                            onclick="return confirm('Отметить как проданное? Объявление останется видимым с пометкой ПРОДАНО.')">
+                                        <i class="bi bi-cart-check"></i> Отметить как проданное
+                                    </button>
+                                </form>
+
+                                <!-- В архив -->
+                                <form th:action="@{/posts/{id}/archive(id=${postId})}"
+                                      method="post">
+                                    <button type="submit"
+                                            class="btn btn-secondary"
+                                            onclick="return confirm('Переместить в архив? Объявление скроется с главной страницы.')">
+                                        <i class="bi bi-archive"></i> В архив
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- ПРОДАННОЕ объявление -->
+                            <div th:if="${currentStatus.name() == 'SOLD'}" class="btn-group" role="group">
+                                <!-- Опубликовать как новое -->
+                                <form th:action="@{/posts/{id}/activate(id=${postId})}"
+                                      method="post">
+                                    <button type="submit"
+                                            class="btn btn-success"
+                                            onclick="return confirm('Опубликовать как новое? Объявление снова станет активным.')">
+                                        <i class="bi bi-arrow-repeat"></i> Опубликовать как новое
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- АРХИВНОЕ объявление -->
+                            <div th:if="${currentStatus.name() == 'ARCHIVED'}" class="btn-group" role="group">
+                                <!-- Активировать -->
+                                <form th:action="@{/posts/{id}/activate(id=${postId})}"
+                                      method="post">
+                                    <button type="submit"
+                                            class="btn btn-success"
+                                            onclick="return confirm('Активировать объявление? Оно снова появится на главной.')">
+                                        <i class="bi bi-play-circle"></i> Активировать
+                                    </button>
+                                </form>
+                            </div>
+
+                            <small class="text-muted d-block mt-2">
+                                Текущий статус:
+                                <span th:if="${currentStatus.name() == 'ACTIVE'}" class="badge bg-success">АКТИВНО</span>
+                                <span th:if="${currentStatus.name() == 'SOLD'}" class="badge bg-danger">ПРОДАНО</span>
+                                <span th:if="${currentStatus.name() == 'ARCHIVED'}" class="badge bg-secondary">АРХИВ</span>
+                            </small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function deletePhoto(button, photoUrl) {
+        if (confirm('Удалить фотографию?')) {
+            const postId = [[${postId}]];
+
+            fetch('/posts/' + postId + '/photos/delete?photoUrl=' + encodeURIComponent(photoUrl), {
+                method: 'POST'
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result === 'OK') {
+                    button.closest('div').remove();
+                } else {
+                    alert('Ошибка удаления');
+                }
+            })
+            .catch(error => {
+                alert('Ошибка: ' + error);
+            });
+        }
+    }
+</script>
+</body>
+</html>
