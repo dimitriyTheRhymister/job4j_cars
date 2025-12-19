@@ -1,11 +1,14 @@
 package ru.job4j.cars.controller;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.job4j.cars.dto.PostDto;
 import ru.job4j.cars.model.Engine;
 import ru.job4j.cars.model.Post;
@@ -16,6 +19,7 @@ import ru.job4j.cars.service.PostService;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -65,8 +69,7 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public String getById(@PathVariable int id, Model model) {  // УБРАЛ HttpSession session
-        // 1. Находим пост
+    public String getById(@PathVariable int id, Model model) {
         Optional<Post> postOptional = postService.findById(id);
 
         if (postOptional.isEmpty()) {
@@ -75,11 +78,7 @@ public class PostController {
         }
 
         Post post = postOptional.get();
-
-        // 2. Добавляем в модель ТОЛЬКО post
         model.addAttribute("post", post);
-        // УДАЛИЛ: model.addAttribute("user", sessionUser);
-
         return "post/details";
     }
 
@@ -156,6 +155,7 @@ public class PostController {
     private void fillEditModel(Post post, Model model) {
         // Создаем DTO
         PostDto postDto = new PostDto();
+        postDto.setId(post.getId()); // Добавляем ID
         postDto.setDescription(post.getDescription());
         postDto.setPrice(post.getPrice());
         postDto.setBrand(post.getCar().getBrand());
@@ -168,10 +168,22 @@ public class PostController {
         postDto.setColor(post.getColor());
         postDto.setEngineId(post.getCar().getEngine().getId());
 
-        model.addAttribute("currentStatus", post.getStatus()); // ← НОВАЯ СТРОКА
+        // ВАЖНО: устанавливаем статус с проверкой на null
+        Post.PostStatus status = post.getStatus();
+        if (status == null) {
+            status = Post.PostStatus.ACTIVE; // Значение по умолчанию
+            System.err.println("WARNING: Post " + post.getId() + " has null status, setting to ACTIVE");
+        }
+        postDto.setStatus(status); // Устанавливаем статус в DTO
+
+        // Добавляем другие поля для отображения
+        postDto.setUserLogin(post.getUser().getLogin());
+        postDto.setPhotoUrls(post.getPhotoUrls());
+
+        model.addAttribute("currentStatus", status);
         model.addAttribute("postDto", postDto);
         model.addAttribute("postId", post.getId());
-        model.addAttribute("currentPhotos", post.getPhotoUrls()); // Текущие фото
+        model.addAttribute("currentPhotos", post.getPhotoUrls());
         addAttributesForForm(model);
     }
 
@@ -182,10 +194,18 @@ public class PostController {
                          @RequestParam(value = "newPhotos", required = false) List<MultipartFile> newPhotos,
                          HttpSession session,
                          Model model) {
+        System.out.println("DEBUG: postDto.status = " + postDto.getStatus());
+        System.out.println("DEBUG: postDto.status class = " + (postDto.getStatus() != null ? postDto.getStatus().getClass() : "null"));
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/auth/login";
         }
+
+        // ДОБАВЬ ОТЛАДКУ:
+        System.out.println("=== EDIT FORM SUBMISSION ===");
+        System.out.println("Post ID: " + id);
+        System.out.println("Status from form: " + postDto.getStatus());
+        System.out.println("Description: " + postDto.getDescription());
 
         if (!hasEditPermission(id, user)) {
             return "redirect:/posts/" + id;
@@ -204,19 +224,26 @@ public class PostController {
         return "redirect:/posts/" + id;
     }
 
-    // Удаление фото
     @PostMapping("/{id}/photos/delete")
     @ResponseBody
-    public String deletePhoto(@PathVariable int id,
-                              @RequestParam String photoUrl,
-                              HttpSession session) {
+    public ResponseEntity<?> deletePhoto(@PathVariable int id,
+                                         @RequestParam String photoUrl,
+                                         HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
-            return "ERROR: Not authorized";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "message", "Не авторизован"));
         }
 
         boolean deleted = postService.deletePhoto(id, photoUrl, user.getId());
-        return deleted ? "OK" : "ERROR";
+
+        if (deleted) {
+            return ResponseEntity.ok()
+                    .body(Map.of("success", true, "message", "Фотография удалена"));
+        } else {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", "Ошибка при удалении фотографии"));
+        }
     }
 
     /**

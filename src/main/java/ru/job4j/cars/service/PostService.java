@@ -31,6 +31,19 @@ public class PostService {
 
     @Transactional
     public Post create(PostDto postDto, User user) {
+        Post post = buildPost(postDto, user);
+        Car savedCar = buildAndSaveCar(postDto);
+        post.setCar(savedCar);
+
+        Post savedPost = postRepository.save(post);
+
+        createPriceHistory(savedPost, postDto.getPrice());
+        savePhotosIfPresent(savedPost, postDto.getPhotos());
+
+        return savedPost;
+    }
+
+    private Post buildPost(PostDto postDto, User user) {
         Post post = new Post();
         post.setDescription(postDto.getDescription());
         post.setPrice(postDto.getPrice());
@@ -40,40 +53,41 @@ public class PostService {
         post.setTransmission(postDto.getTransmission());
         post.setMileage(postDto.getMileage());
         post.setColor(postDto.getColor());
-        post.setStatus(Post.PostStatus.ACTIVE);
-        // Создаем или находим автомобиль
+        post.setStatus(postDto.getStatus() != null ? postDto.getStatus() : Post.PostStatus.ACTIVE);
+        return post;
+    }
+
+    private Car buildAndSaveCar(PostDto postDto) {
         Car car = new Car();
         car.setBrand(postDto.getBrand());
         car.setModel(postDto.getModel());
         car.setManufactureYear(postDto.getManufactureYear());
-//        car.setCategory(postDto.getCategory());
-        // Находим двигатель
+
         Engine engine = engineRepository.findById(postDto.getEngineId())
                 .orElseThrow(() -> new RuntimeException("Двигатель не найден"));
         car.setEngine(engine);
 
-        Car savedCar = carRepository.create(car);
-        post.setCar(savedCar);
-        // Сохраняем пост
-        Post savedPost = postRepository.save(post);
-        // Создаем историю цен
-        PriceHistory priceHistory = new PriceHistory();
-        priceHistory.setBefore(0L);
-        priceHistory.setAfter(postDto.getPrice());
-        priceHistory.setPost(savedPost);
-        priceHistoryRepository.save(priceHistory);
-
-        // Сохраняем фото
-        if (postDto.getPhotos() != null && !postDto.getPhotos().isEmpty()) {
-            savePhotos(savedPost, postDto.getPhotos());
-        }
-
-        return savedPost;
+        return carRepository.create(car);
     }
 
-    private void savePhotos(Post post, List<MultipartFile> photos) {
-        List<String> photoUrls = new ArrayList<>();
+    private void createPriceHistory(Post post, Long price) {
+        PriceHistory priceHistory = new PriceHistory();
+        priceHistory.setBefore(0L);
+        priceHistory.setAfter(price);
+        priceHistory.setPost(post);
+        priceHistoryRepository.save(priceHistory);
+    }
 
+    private void savePhotosIfPresent(Post post, List<MultipartFile> photos) {
+        if (photos != null && !photos.isEmpty()) {
+            List<String> photoUrls = savePhotos(photos);
+            post.setPhotoUrls(photoUrls);
+            postRepository.update(post);
+        }
+    }
+
+    private List<String> savePhotos(List<MultipartFile> photos) {
+        List<String> photoUrls = new ArrayList<>();
         for (MultipartFile photo : photos) {
             if (!photo.isEmpty()) {
                 try {
@@ -86,24 +100,20 @@ public class PostService {
 
                     Path filePath = uploadPath.resolve(fileName);
                     Files.copy(photo.getInputStream(), filePath);
-
                     photoUrls.add("/uploads/" + fileName);
                 } catch (IOException e) {
                     throw new RuntimeException("Ошибка при сохранении фото", e);
                 }
             }
         }
-
-        post.setPhotoUrls(photoUrls);
-        postRepository.update(post);
+        return photoUrls;
     }
 
-    // НОВЫЙ МЕТОД: получаем ВСЕ объявления
+    // Остальные методы остаются без изменений
     public List<Post> findAll() {
         return postRepository.findAll();
     }
 
-    // Существующий метод: получаем только активные
     public List<Post> findAllActive() {
         return postRepository.findActive();
     }
@@ -119,9 +129,18 @@ public class PostService {
     @Transactional
     public boolean updateStatus(int postId, Post.PostStatus status, int userId) {
         try {
+            System.out.println("=== UPDATE STATUS DEBUG ===");
+            System.out.println("Post ID: " + postId);
+            System.out.println("New Status: " + status);
+            System.out.println("User ID: " + userId);
+
             postRepository.updateStatus(postId, status, userId);
+
+            System.out.println("Status updated successfully");
             return true;
         } catch (Exception e) {
+            System.err.println("ERROR updating status: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
@@ -139,7 +158,6 @@ public class PostService {
     public List<String> getAllBodyTypes() {
         List<String> bodyTypes = postRepository.findDistinctBodyTypes();
         if (bodyTypes.isEmpty()) {
-            // Если в базе нет данных, возвращаем стандартный список
             return List.of("Седан", "Хэтчбек", "Универсал", "Внедорожник", "Купе",
                     "Кабриолет", "Минивэн", "Пикап", "Лифтбек", "Фургон");
         }
@@ -171,22 +189,52 @@ public class PostService {
 
         validateOwnership(post, user);
         updatePostFields(post, postDto);
+
+        if (postDto.getPhotos() != null && !postDto.getPhotos().isEmpty()) {
+            List<String> existingUrls = post.getPhotoUrls() != null ? post.getPhotoUrls() : new ArrayList<>();
+            List<String> newUrls = saveNewPhotos(postDto.getPhotos());
+            existingUrls.addAll(newUrls);
+            post.setPhotoUrls(existingUrls);
+        }
+
+        postRepository.update(post);
     }
 
-    /**
-     * Проверяет, что пользователь является владельцем поста
-     */
+    private List<String> saveNewPhotos(List<MultipartFile> photos) {
+        List<String> photoUrls = new ArrayList<>();
+        for (MultipartFile photo : photos) {
+            if (!photo.isEmpty()) {
+                try {
+                    String fileName = UUID.randomUUID() + "_" + photo.getOriginalFilename();
+                    Path uploadPath = Paths.get(UPLOAD_DIR);
+
+                    if (!Files.exists(uploadPath)) {
+                        Files.createDirectories(uploadPath);
+                    }
+
+                    Path filePath = uploadPath.resolve(fileName);
+                    Files.copy(photo.getInputStream(), filePath);
+                    photoUrls.add("/uploads/" + fileName);
+                } catch (IOException e) {
+                    throw new RuntimeException("Ошибка при сохранении фото", e);
+                }
+            }
+        }
+        return photoUrls;
+    }
+
     private void validateOwnership(Post post, User user) {
         if (!post.getUser().getId().equals(user.getId())) {
             throw new RuntimeException("Нет прав на редактирование");
         }
     }
 
-    /**
-     * Обновляет поля поста и автомобиля
-     */
     private void updatePostFields(Post post, PostDto postDto) {
-        // Обновляем пост
+        // ДОБАВЬ ОТЛАДКУ:
+        System.out.println("=== UPDATE POST FIELDS ===");
+        System.out.println("Current post status: " + post.getStatus());
+        System.out.println("Status from DTO: " + postDto.getStatus());
+
         post.setDescription(postDto.getDescription());
         post.setPrice(postDto.getPrice());
         post.setBodyType(postDto.getBodyType());
@@ -195,15 +243,14 @@ public class PostService {
         post.setMileage(postDto.getMileage());
         post.setColor(postDto.getColor());
 
-        // Обновляем автомобиль
-        updateCarFields(post.getCar(), postDto);
+        // ДОБАВЬ ЭТУ СТРОЧКУ (если еще не добавил):
+        post.setStatus(postDto.getStatus());
 
-        postRepository.update(post);
+        System.out.println("Status after update: " + post.getStatus());
+
+        updateCarFields(post.getCar(), postDto);
     }
 
-    /**
-     * Обновляет поля автомобиля
-     */
     private void updateCarFields(Car car, PostDto postDto) {
         car.setBrand(postDto.getBrand());
         car.setModel(postDto.getModel());
@@ -224,25 +271,35 @@ public class PostService {
         }
 
         Post post = postOptional.get();
-
-        // Проверяем права
         if (post.getUser().getId() != userId) {
             return false;
         }
 
-        // Удаляем фото из списка
         List<String> photoUrls = post.getPhotoUrls();
         if (photoUrls != null && photoUrls.contains(photoUrl)) {
             photoUrls.remove(photoUrl);
             post.setPhotoUrls(photoUrls);
             postRepository.update(post);
+            deletePhysicalFile(photoUrl);
             return true;
         }
 
         return false;
     }
 
-    // В PostService.java добавляем:
+    private void deletePhysicalFile(String photoUrl) {
+        try {
+            String fileName = photoUrl.substring(photoUrl.lastIndexOf("/") + 1);
+            Path filePath = Paths.get(UPLOAD_DIR + fileName);
+            if (Files.exists(filePath)) {
+                Files.delete(filePath);
+                System.out.println("Файл удален: " + filePath);
+            }
+        } catch (Exception e) {
+            System.err.println("Ошибка при удалении файла: " + e.getMessage());
+        }
+    }
+
     public List<Post> findByStatus(Post.PostStatus status) {
         return postRepository.findByStatus(status);
     }

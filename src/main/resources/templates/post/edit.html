@@ -44,6 +44,16 @@
 </nav>
 
 <div class="container mt-4">
+    <!-- Сообщения об успехе/ошибке -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
     <div class="row justify-content-center">
         <div class="col-md-10">
             <div class="card">
@@ -59,6 +69,74 @@
                           enctype="multipart/form-data"
                           th:object="${postDto}">
 
+
+                        <!-- Управление статусом — ТОЛЬКО НУЖНЫЕ КНОПКИ -->
+                        <div class="status-buttons" th:if="${currentStatus != null}">
+                            <div th:class="${'alert ' +
+    (currentStatus.name() == 'ACTIVE' ? 'alert-success' :
+     currentStatus.name() == 'SOLD'     ? 'alert-danger' :
+                                           'alert-secondary')}">
+                                Текущий статус:
+                                <span th:switch="${currentStatus.name()}">
+        <span th:case="ACTIVE">Активно</span>
+        <span th:case="SOLD">Продано</span>
+        <span th:case="ARCHIVED">В архиве</span>
+    </span>
+                            </div>
+<!--                            <div class="alert alert-info">-->
+<!--                                Текущий статус:-->
+<!--                                <span th:switch="${currentStatus.name()}">-->
+<!--                                    <span th:case="ACTIVE">Активно</span>-->
+<!--                                    <span th:case="SOLD">Продано</span>-->
+<!--                                    <span th:case="ARCHIVED">В архиве</span>-->
+<!--                                </span>-->
+<!--                            </div>-->
+
+                            <div class="btn-group" role="group">
+                                <!-- Если АКТИВНЫЙ -->
+                                <!--                                <th:block th:if="${currentStatus.name() == 'ACTIVE'}">-->
+                                <!--                                    <form th:action="@{/posts/{id}/sell(id=${postId})}" method="post" class="me-2">-->
+                                <!--                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Отметить как проданное?')">-->
+                                <!--                                            <i class="bi bi-cart-check"></i> Продано-->
+                                <!--                                        </button>-->
+                                <!--                                    </form>-->
+                                <!--                                    <form th:action="@{/posts/{id}/archive(id=${postId})}" method="post" class="me-2">-->
+                                <!--                                        <button type="submit" class="btn btn-secondary" onclick="return confirm('Переместить в архив?')">-->
+                                <!--                                            <i class="bi bi-archive"></i> В архив-->
+                                <!--                                        </button>-->
+                                <!--                                    </form>-->
+                                <!--                                </th:block>-->
+
+                                <!-- Если ПРОДАНО -->
+                                <!--                                <th:block th:if="${currentStatus.name() == 'SOLD'}">-->
+                                <!--                                    <form th:action="@{/posts/{id}/activate(id=${postId})}" method="post">-->
+                                <!--                                        <button type="submit" class="btn btn-success" onclick="return confirm('Опубликовать как новое?')">-->
+                                <!--                                            <i class="bi bi-play-circle"></i> Опубликовать как новое-->
+                                <!--                                        </button>-->
+                                <!--                                    </form>-->
+                                <!--                                </th:block>-->
+
+                                <!-- Если В АРХИВЕ -->
+                                <!--                                <th:block th:if="${currentStatus.name() == 'ARCHIVED'}">-->
+                                <!--                                    <form th:action="@{/posts/{id}/activate(id=${postId})}" method="post">-->
+                                <!--                                        <button type="submit" class="btn btn-success" onclick="return confirm('Активировать объявление?')">-->
+                                <!--                                            <i class="bi bi-play-circle"></i> Активировать-->
+                                <!--                                        </button>-->
+                                <!--                                    </form>-->
+                                <!--                                </th:block>-->
+                            </div>
+                        </div>
+
+                        <!-- Статус -->
+                        <div class="mb-3">
+                            <label class="form-label">Изменить текущий статус *</label>
+                            <select class="form-select" name="status" required>
+                                <option value="ACTIVE" th:selected="${currentStatus.name() == 'ACTIVE'}">Активно</option>
+                                <option value="SOLD" th:selected="${currentStatus.name() == 'SOLD'}">Продано</option>
+                                <option value="ARCHIVED" th:selected="${currentStatus.name() == 'ARCHIVED'}">В архиве</option>
+                            </select>
+                        </div>
+
                         <!-- Текущие фотографии -->
                         <div class="current-photos" th:if="${currentPhotos != null and not currentPhotos.empty}">
                             <h6>Текущие фотографии:</h6>
@@ -66,8 +144,11 @@
                                 <div th:each="photo : ${currentPhotos}" class="position-relative">
                                     <img th:src="${photo}" class="photo-preview">
                                     <button type="button"
-                                            class="btn btn-danger btn-sm position-absolute top-0 end-0"
-                                            onclick="deletePhoto(this, '[[${photo}]]')">
+                                            class="btn btn-danger btn-sm delete-photo-btn"
+                                            th:data-post-id="${postId}"
+                                            th:data-photo-url="${photo}"
+                                            onclick="deletePhoto(this)"
+                                            style="position: absolute; top: 0; right: 0;">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
@@ -120,8 +201,7 @@
                                     <option value="">Выберите марку</option>
                                     <option th:each="brand : ${brands}"
                                             th:value="${brand}"
-                                            th:text="${brand}"
-                                            th:selected="${brand == postDto.brand}"></option>
+                                            th:text="${brand}"></option>
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -154,8 +234,7 @@
                                     <option value="">Выберите тип</option>
                                     <option th:each="type : ${bodyTypes}"
                                             th:value="${type}"
-                                            th:text="${type}"
-                                            th:selected="${type == postDto.bodyType}"></option>
+                                            th:text="${type}"></option>
                                 </select>
                             </div>
                             <div class="col-md-4 mb-3">
@@ -165,8 +244,7 @@
                                     <option value="">Выберите категорию</option>
                                     <option th:each="cat : ${categories}"
                                             th:value="${cat}"
-                                            th:text="${cat}"
-                                            th:selected="${cat == postDto.category}"></option>
+                                            th:text="${cat}"></option>
                                 </select>
                             </div>
                         </div>
@@ -181,8 +259,7 @@
                                     <option value="">Выберите тип</option>
                                     <option th:each="type : ${engineTypes}"
                                             th:value="${type}"
-                                            th:text="${type}"
-                                            th:selected="${type == postDto.engineType}"></option>
+                                            th:text="${type}"></option>
                                 </select>
                             </div>
                             <div class="col-md-4 mb-3">
@@ -193,8 +270,7 @@
                                     <option value="">Выберите коробку</option>
                                     <option th:each="trans : ${transmissions}"
                                             th:value="${trans}"
-                                            th:text="${trans}"
-                                            th:selected="${trans == postDto.transmission}"></option>
+                                            th:text="${trans}"></option>
                                 </select>
                             </div>
                             <div class="col-md-4 mb-3">
@@ -204,8 +280,7 @@
                                     <option value="">Выберите цвет</option>
                                     <option th:each="color : ${colors}"
                                             th:value="${color}"
-                                            th:text="${color}"
-                                            th:selected="${color == postDto.color}"></option>
+                                            th:text="${color}"></option>
                                 </select>
                             </div>
                         </div>
@@ -219,8 +294,7 @@
                                 <option value="">Выберите двигатель</option>
                                 <option th:each="engine : ${engines}"
                                         th:value="${engine.id}"
-                                        th:text="${engine.name + ' (' + engine.volume + ' л, ' + engine.power + ' л.с.)'}"
-                                        th:selected="${engine.id == postDto.engineId}"></option>
+                                        th:text="${engine.name + ' (' + engine.volume + ' л, ' + engine.power + ' л.с.)'}"></option>
                             </select>
                         </div>
 
@@ -248,67 +322,6 @@
                             </a>
                         </div>
 
-                        <!-- КНОПКИ ИЗМЕНЕНИЯ СТАТУСА -->
-                        <div class="status-buttons">
-                            <h6>Управление статусом:</h6>
-
-                            <!-- АКТИВНОЕ объявление -->
-                            <div th:if="${currentStatus.name() == 'ACTIVE'}" class="btn-group" role="group">
-                                <!-- Продано -->
-                                <form th:action="@{/posts/{id}/sell(id=${postId})}"
-                                      method="post"
-                                      class="me-2">
-                                    <button type="submit"
-                                            class="btn btn-danger"
-                                            onclick="return confirm('Отметить как проданное? Объявление останется видимым с пометкой ПРОДАНО.')">
-                                        <i class="bi bi-cart-check"></i> Отметить как проданное
-                                    </button>
-                                </form>
-
-                                <!-- В архив -->
-                                <form th:action="@{/posts/{id}/archive(id=${postId})}"
-                                      method="post">
-                                    <button type="submit"
-                                            class="btn btn-secondary"
-                                            onclick="return confirm('Переместить в архив? Объявление скроется с главной страницы.')">
-                                        <i class="bi bi-archive"></i> В архив
-                                    </button>
-                                </form>
-                            </div>
-
-                            <!-- ПРОДАННОЕ объявление -->
-                            <div th:if="${currentStatus.name() == 'SOLD'}" class="btn-group" role="group">
-                                <!-- Опубликовать как новое -->
-                                <form th:action="@{/posts/{id}/activate(id=${postId})}"
-                                      method="post">
-                                    <button type="submit"
-                                            class="btn btn-success"
-                                            onclick="return confirm('Опубликовать как новое? Объявление снова станет активным.')">
-                                        <i class="bi bi-arrow-repeat"></i> Опубликовать как новое
-                                    </button>
-                                </form>
-                            </div>
-
-                            <!-- АРХИВНОЕ объявление -->
-                            <div th:if="${currentStatus.name() == 'ARCHIVED'}" class="btn-group" role="group">
-                                <!-- Активировать -->
-                                <form th:action="@{/posts/{id}/activate(id=${postId})}"
-                                      method="post">
-                                    <button type="submit"
-                                            class="btn btn-success"
-                                            onclick="return confirm('Активировать объявление? Оно снова появится на главной.')">
-                                        <i class="bi bi-play-circle"></i> Активировать
-                                    </button>
-                                </form>
-                            </div>
-
-                            <small class="text-muted d-block mt-2">
-                                Текущий статус:
-                                <span th:if="${currentStatus.name() == 'ACTIVE'}" class="badge bg-success">АКТИВНО</span>
-                                <span th:if="${currentStatus.name() == 'SOLD'}" class="badge bg-danger">ПРОДАНО</span>
-                                <span th:if="${currentStatus.name() == 'ARCHIVED'}" class="badge bg-secondary">АРХИВ</span>
-                            </small>
-                        </div>
                     </form>
                 </div>
             </div>
@@ -317,26 +330,56 @@
 </div>
 
 <script>
-    function deletePhoto(button, photoUrl) {
-        if (confirm('Удалить фотографию?')) {
-            const postId = [[${postId}]];
-
-            fetch('/posts/' + postId + '/photos/delete?photoUrl=' + encodeURIComponent(photoUrl), {
-                method: 'POST'
-            })
-            .then(response => response.text())
-            .then(result => {
-                if (result === 'OK') {
-                    button.closest('div').remove();
-                } else {
-                    alert('Ошибка удаления');
-                }
-            })
-            .catch(error => {
-                alert('Ошибка: ' + error);
-            });
+    function deletePhoto(button) {
+        if (!confirm('Удалить фотографию?')) {
+            return;
         }
+
+        const postId = button.getAttribute('data-post-id');
+        const photoUrl = button.getAttribute('data-photo-url');
+
+        fetch('/posts/' + postId + '/photos/delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'photoUrl=' + encodeURIComponent(photoUrl)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                button.closest('.position-relative').remove();
+                showMessage(data.message, 'success');
+            } else {
+                showMessage(data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('Ошибка при удалении фотографии', 'danger');
+        });
+    }
+
+    function showMessage(text, type) {
+        let container = document.getElementById('ajax-messages');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'ajax-messages';
+            container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999;';
+            document.body.appendChild(container);
+        }
+
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show`;
+        alert.innerHTML = `
+            ${text}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        container.appendChild(alert);
+
+        setTimeout(() => alert.remove(), 3000);
     }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

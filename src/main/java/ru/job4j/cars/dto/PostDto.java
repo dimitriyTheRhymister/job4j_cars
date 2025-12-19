@@ -2,6 +2,7 @@ package ru.job4j.cars.dto;
 
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
+import ru.job4j.cars.model.Post.PostStatus; // Импортируем enum
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -53,5 +54,7 @@ public class PostDto {
     // Для отображения
     private String userLogin;
     private List<String> photoUrls;
-    private String status;
+
+    // ИЗМЕНЕНИЕ: используем Post.PostStatus вместо String
+    private PostStatus status; // было: private String status;
 }
