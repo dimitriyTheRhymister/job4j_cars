@@ -16,8 +16,8 @@ public class EngineRepository {
      * @param engine двигатель.
      * @return двигатель с id.
      */
-    public Engine create(Engine engine) {
-        crudRepository.run(session -> session.persist(engine));
+    public Engine save(Engine engine) {
+        crudRepository.run(session -> session.save(engine));
         return engine;
     }
 
@@ -26,7 +26,7 @@ public class EngineRepository {
      * @param engine двигатель.
      */
     public void update(Engine engine) {
-        crudRepository.run(session -> session.merge(engine));
+        crudRepository.run(session -> session.update(engine));
     }
 
     /**

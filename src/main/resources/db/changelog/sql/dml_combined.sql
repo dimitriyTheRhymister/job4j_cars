@@ -16,20 +16,40 @@ INSERT INTO auto_user (login, password) VALUES
 INSERT INTO engines (name, volume, power) VALUES
 ('V6 3.5L', 3.5, 249),
 ('I4 2.0L', 2.0, 150),
-('V8 5.7L', 5.7, 345);
+('V8 5.7L', 5.7, 345),
+('Бензиновый 1.6', 1.6, 120),
+('Бензиновый 2.0', 2.0, 150),
+('Дизельный 2.0', 2.0, 140);
 
 -- 3. Автомобили
 INSERT INTO cars (name, model, manufacture_year, engine_id) VALUES
 ('Toyota', 'Camry', 2015, 1),
 ('Honda', 'Civic', 2018, 2),
-('Ford', 'Mustang', 2020, 3);
+('Ford', 'Mustang', 2020, 3),
+('Toyota', 'Corolla', 2021, 4),
+('Honda', 'Accord', 2019, 5),
+('Ford', 'Focus', 2017, 6);
 
--- 4. Объявления
-INSERT INTO auto_post (description, auto_user_id, car_id) VALUES
-('Продам Toyota Camry 2022 года, в отличном состоянии, пробег 30 000 км.', 1, 1),
-('Продам Honda Civic 2021 года, полный комплект, сервисная история.', 2, 2),
-('Продам BMW X5 2023 года, премиум комплектация, гарантия дилера.', 1, 3),
-('Продам Lada Vesta 2020 года, экономичный расход, идеально для города.', 3, NULL);
+-- 4. Объявления (ДОБАВЛЕНЫ НОВЫЕ ПОЛЯ)
+INSERT INTO auto_post (description, auto_user_id, car_id, currentprice,
+                       body_type, engine_type, transmission, mileage, color, status) VALUES
+('Продам Toyota Camry 2022 года, в отличном состоянии, пробег 30 000 км.',
+ 1, 1, 1500000, 'Седан', 'Бензиновый', 'Автоматическая', 30000, 'Черный', 'ACTIVE'),
+
+('Продам Honda Civic 2021 года, полный комплект, сервисная история.',
+ 2, 2, 1200000, 'Седан', 'Бензиновый', 'Механическая', 25000, 'Белый', 'ACTIVE'),
+
+('Продам BMW X5 2023 года, премиум комплектация, гарантия дилера.',
+ 1, 3, 3500000, 'Внедорожник', 'Бензиновый', 'Автоматическая', 15000, 'Синий', 'ACTIVE'),
+
+('Продам Lada Vesta 2020 года, экономичный расход, идеально для города.',
+ 3, 4, 800000, 'Седан', 'Бензиновый', 'Механическая', 45000, 'Серебристый', 'ACTIVE'),
+
+('Продам Toyota Corolla 2021 года, идеальное состояние.',
+ 4, 5, 1300000, 'Седан', 'Бензиновый', 'Автоматическая', 20000, 'Красный', 'ACTIVE'),
+
+('Продам Ford Focus 2017 года, без ДТП.',
+ 5, 6, 700000, 'Хэтчбек', 'Бензиновый', 'Механическая', 60000, 'Серый', 'ACTIVE');
 
 -- 5. Владельцы
 INSERT INTO owners (name, user_id) VALUES
@@ -51,10 +71,12 @@ INSERT INTO price_history (before, after, post_id) VALUES
 
 -- 8. Фотографии (пример)
 INSERT INTO post_photos (post_id, photo_url) VALUES
-(1, 'https://example.com/toyota1.jpg'),
-(1, 'https://example.com/toyota2.jpg'),
-(2, 'https://example.com/honda1.jpg'),
-(3, 'https://example.com/bmw1.jpg');
+(1, '/uploads/1.jpg'),
+(2, '/uploads/2.jpg'),
+(3, '/uploads/3.jpg'),
+(4, '/uploads/4.jpg'),
+(5, '/uploads/5.jpg'),
+(6, '/uploads/6.jpg');
 
 -- 9. Подписки/участие (пример)
 INSERT INTO participates (user_id, post_id) VALUES

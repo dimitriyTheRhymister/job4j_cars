@@ -11,75 +11,36 @@ import java.util.Optional;
 public class UserRepository {
     private final CrudRepository crudRepository;
 
-    /**
-     * Сохранить в базе.
-     * @param user пользователь.
-     * @return пользователь с id.
-     */
-    public User create(User user) {
-        crudRepository.run(session -> session.persist(user));
+    public User save(User user) {
+        crudRepository.run(session -> session.save(user));
         return user;
     }
 
-    /**
-     * Обновить в базе пользователя.
-     * @param user пользователь.
-     */
-    public void update(User user) {
-        crudRepository.run(session -> session.merge(user));
-    }
-
-    /**
-     * Удалить пользователя по id.
-     * @param userId ID
-     */
-    public void delete(int userId) {
-        crudRepository.run(
-                "DELETE FROM User WHERE id = :fId",
-                Map.of("fId", userId)
-        );
-    }
-
-    /**
-     * Список пользователь отсортированных по id.
-     * @return список пользователей.
-     */
-    public List<User> findAllOrderById() {
-        return crudRepository.query("FROM User ORDER BY id ASC", User.class);
-    }
-
-    /**
-     * Найти пользователя по ID
-     * @return пользователь.
-     */
-    public Optional<User> findById(int userId) {
+    public Optional<User> findById(int id) {
         return crudRepository.optional(
-                "FROM User WHERE id = :fId", User.class,
-                Map.of("fId", userId)
+                "FROM User WHERE id = :id",
+                User.class,
+                Map.of("id", id)
         );
     }
 
-    /**
-     * Список пользователей по login LIKE %key%
-     * @param key key
-     * @return список пользователей.
-     */
-    public List<User> findByLikeLogin(String key) {
-        return crudRepository.query(
-                "FROM User WHERE login LIKE :fKey", User.class,
-                Map.of("fKey", "%" + key + "%")
-        );
-    }
-
-    /**
-     * Найти пользователя по login.
-     * @param login login.
-     * @return Optional or user.
-     */
     public Optional<User> findByLogin(String login) {
         return crudRepository.optional(
-                "FROM User WHERE login = :fLogin", User.class,
-                Map.of("fLogin", login)
+                "FROM User WHERE login = :login",
+                User.class,
+                Map.of("login", login)
         );
+    }
+
+    public Optional<User> findByLoginAndPassword(String login, String password) {
+        return crudRepository.optional(
+                "FROM User WHERE login = :login AND password = :password",
+                User.class,
+                Map.of("login", login, "password", password)
+        );
+    }
+
+    public List<User> findAll() {
+        return crudRepository.query("FROM User", User.class);
     }
 }

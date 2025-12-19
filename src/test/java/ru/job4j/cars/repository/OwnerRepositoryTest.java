@@ -36,7 +36,7 @@ class OwnerRepositoryTest extends RepositoryTestBase {
         User user = new User();
         user.setLogin(login);
         user.setPassword("password");
-        return userRepository.create(user);
+        return userRepository.save(user);
     }
 
     private Car createTestCar(String name, String model) {
@@ -44,10 +44,10 @@ class OwnerRepositoryTest extends RepositoryTestBase {
         engine.setName("Engine " + name);
         engine.setVolume(2.0);
         engine.setPower(150);
-        engineRepository.create(engine);
+        engineRepository.save(engine);
 
         Car car = new Car();
-        car.setName(name);
+        car.setBrand(name);
         car.setModel(model);
         car.setManufactureYear(2020);
         car.setEngine(engine);

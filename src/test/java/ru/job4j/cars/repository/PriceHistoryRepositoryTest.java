@@ -33,7 +33,7 @@ class PriceHistoryRepositoryTest extends RepositoryTestBase {
         User user = new User();
         user.setLogin(login);
         user.setPassword("password");
-        return userRepository.create(user);
+        return userRepository.save(user);
     }
 
     private Post createTestPostWithPrice(String description, User user, long price) {
@@ -41,10 +41,10 @@ class PriceHistoryRepositoryTest extends RepositoryTestBase {
         engine.setName("Engine");
         engine.setVolume(2.0);
         engine.setPower(150);
-        engineRepository.create(engine);
+        engineRepository.save(engine);
 
         Car car = new Car();
-        car.setName("Car");
+        car.setBrand("Car");
         car.setModel("Model");
         car.setManufactureYear(2020);
         car.setEngine(engine);
@@ -54,8 +54,8 @@ class PriceHistoryRepositoryTest extends RepositoryTestBase {
         post.setDescription(description);
         post.setUser(user);
         post.setCar(car);
-        post.setCurrentPrice(price);
-        return postRepository.create(post);
+        post.setPrice(price);
+        return postRepository.save(post);
     }
 
     @Test

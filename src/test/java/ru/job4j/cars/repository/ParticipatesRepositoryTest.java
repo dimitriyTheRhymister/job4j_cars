@@ -32,7 +32,7 @@ class ParticipatesRepositoryTest extends RepositoryTestBase {
         User user = new User();
         user.setLogin(login);
         user.setPassword("password");
-        return userRepository.create(user);
+        return userRepository.save(user);
     }
 
     private Post createTestPost(String description, User user) {
@@ -40,10 +40,10 @@ class ParticipatesRepositoryTest extends RepositoryTestBase {
         engine.setName("Engine");
         engine.setVolume(2.0);
         engine.setPower(150);
-        engineRepository.create(engine);
+        engineRepository.save(engine);
 
         Car car = new Car();
-        car.setName("Car");
+        car.setBrand("Car");
         car.setModel("Model");
         car.setManufactureYear(2020);
         car.setEngine(engine);
@@ -53,7 +53,7 @@ class ParticipatesRepositoryTest extends RepositoryTestBase {
         post.setDescription(description);
         post.setUser(user);
         post.setCar(car);
-        return postRepository.create(post);
+        return postRepository.save(post);
     }
 
     @Test

@@ -28,7 +28,7 @@ class EngineRepositoryTest extends RepositoryTestBase {
         engine.setVolume(3.0);
         engine.setPower(250);
 
-        engineRepository.create(engine);
+        engineRepository.save(engine);
 
         Optional<Engine> found = engineRepository.findById(engine.getId());
         assertThat(found).isPresent();
@@ -43,13 +43,13 @@ class EngineRepositoryTest extends RepositoryTestBase {
         engine1.setName("Engine1");
         engine1.setVolume(1.6);
         engine1.setPower(120);
-        engineRepository.create(engine1);
+        engineRepository.save(engine1);
 
         Engine engine2 = new Engine();
         engine2.setName("Engine2");
         engine2.setVolume(2.0);
         engine2.setPower(150);
-        engineRepository.create(engine2);
+        engineRepository.save(engine2);
 
         List<Engine> engines = engineRepository.findAllOrderById();
         assertThat(engines).hasSize(2);
@@ -64,7 +64,7 @@ class EngineRepositoryTest extends RepositoryTestBase {
         engine.setName("V8 5.7L");
         engine.setVolume(5.7);
         engine.setPower(345);
-        engineRepository.create(engine);
+        engineRepository.save(engine);
 
         List<Engine> found = engineRepository.findByName("V8 5.7L");
         assertThat(found).hasSize(1);
@@ -77,19 +77,19 @@ class EngineRepositoryTest extends RepositoryTestBase {
         engine1.setName("Small");
         engine1.setVolume(1.6);
         engine1.setPower(100);
-        engineRepository.create(engine1);
+        engineRepository.save(engine1);
 
         Engine engine2 = new Engine();
         engine2.setName("Medium");
         engine2.setVolume(2.5);
         engine2.setPower(200);
-        engineRepository.create(engine2);
+        engineRepository.save(engine2);
 
         Engine engine3 = new Engine();
         engine3.setName("Large");
         engine3.setVolume(4.0);
         engine3.setPower(300);
-        engineRepository.create(engine3);
+        engineRepository.save(engine3);
 
         List<Engine> found = engineRepository.findByVolumeGreaterThan(2.0);
         assertThat(found).hasSize(2);
@@ -103,19 +103,19 @@ class EngineRepositoryTest extends RepositoryTestBase {
         engine1.setName("Weak");
         engine1.setVolume(1.6);
         engine1.setPower(100);
-        engineRepository.create(engine1);
+        engineRepository.save(engine1);
 
         Engine engine2 = new Engine();
         engine2.setName("Medium");
         engine2.setVolume(2.0);
         engine2.setPower(150);
-        engineRepository.create(engine2);
+        engineRepository.save(engine2);
 
         Engine engine3 = new Engine();
         engine3.setName("Strong");
         engine3.setVolume(3.0);
         engine3.setPower(250);
-        engineRepository.create(engine3);
+        engineRepository.save(engine3);
 
         List<Engine> found = engineRepository.findByPowerBetween(120, 200);
         assertThat(found).hasSize(1);
@@ -128,7 +128,7 @@ class EngineRepositoryTest extends RepositoryTestBase {
         engine.setName("OldName");
         engine.setVolume(2.0);
         engine.setPower(150);
-        engineRepository.create(engine);
+        engineRepository.save(engine);
 
         engine.setName("NewName");
         engine.setVolume(2.5);
@@ -148,7 +148,7 @@ class EngineRepositoryTest extends RepositoryTestBase {
         engine.setName("ToDelete");
         engine.setVolume(2.0);
         engine.setPower(150);
-        engineRepository.create(engine);
+        engineRepository.save(engine);
         int id = engine.getId();
 
         engineRepository.delete(id);

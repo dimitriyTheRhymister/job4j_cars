@@ -2,8 +2,6 @@ package ru.job4j.cars.model;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -23,11 +21,11 @@ public class Post {
     private String description;
     private LocalDateTime created = LocalDateTime.now();
 
-    @ManyToOne
-    @JoinColumn(name = "auto_user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "auto_user_id")  // ИЗМЕНИТЕ С "user_id" на "auto_user_id"
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "car_id")
     private Car car;
 
@@ -35,52 +33,45 @@ public class Post {
     @JoinColumn(name = "post_id")
     private List<PriceHistory> priceHistories = new ArrayList<>();
 
-    private Long currentPrice;
+    @Column(name = "currentprice")  // ДОБАВЬТЕ ЭТУ АННОТАЦИЮ
+    private Long price;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participates> subscribers = new ArrayList<>();
 
-    // ДОБАВЛЕНО: Поле для хранения фото (URL-адреса изображений)
-    // ИЗМЕНЕНО: LAZY вместо EAGER
-    @ElementCollection(fetch = FetchType.LAZY)  // Ленивая загрузка
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "post_photos", joinColumns = @JoinColumn(name = "post_id"))
     @Column(name = "photo_url")
     private List<String> photoUrls = new ArrayList<>();
 
-    /**
-     * Проверяет, есть ли у объявления фото
-     * @return true если есть хотя бы одно фото
-     */
-    public boolean hasPhotos() {
-        return photoUrls != null && !photoUrls.isEmpty();
+    @Enumerated(EnumType.STRING)
+    private PostStatus status = PostStatus.ACTIVE;
+
+    // Добавляем поля для фильтрации
+    @Column(name = "body_type")
+    private String bodyType; // тип кузова
+
+    @Column(name = "engine_type")
+    private String engineType; // тип двигателя
+
+    @Column(name = "transmission")
+    private String transmission; // коробка передач
+
+    @Column(name = "mileage")
+    private Integer mileage; // пробег
+
+    @Column(name = "color")
+    private String color; // цвет
+
+    public enum PostStatus {
+        ACTIVE, SOLD, ARCHIVED
     }
 
-    /**
-     * Добавляет фото к объявлению
-     * @param photoUrl URL фото
-     */
-    public void addPhoto(String photoUrl) {
-        if (photoUrls == null) {
-            photoUrls = new ArrayList<>();
-        }
-        photoUrls.add(photoUrl);
+    public boolean isSold() {
+        return status == PostStatus.SOLD;
     }
 
-    /**
-     * Удаляет фото из объявления
-     * @param photoUrl URL фото для удаления
-     */
-    public void removePhoto(String photoUrl) {
-        if (photoUrls != null) {
-            photoUrls.remove(photoUrl);
-        }
-    }
-
-    /**
-     * Получить количество фото
-     * @return количество фото
-     */
-    public int getPhotoCount() {
-        return photoUrls != null ? photoUrls.size() : 0;
+    public boolean isActive() {
+        return status == PostStatus.ACTIVE;
     }
 }

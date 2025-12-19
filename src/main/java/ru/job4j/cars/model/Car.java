@@ -17,14 +17,17 @@ public class Car {
     @EqualsAndHashCode.Include
     private Integer id;
 
-    private String name;
+    @Column(name = "name")  // СВЯЗЬ С КОЛОНКОЙ "name" в таблице
+    private String brand; // марка
+
+    @Column(name = "model")
     private String model;
 
     @Column(name = "manufacture_year")
     private Integer manufactureYear;
 
-    @ManyToOne
-    @JoinColumn(name = "engine_id", foreignKey = @ForeignKey(name = "ENGINE_ID_FK"))
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "engine_id")
     private Engine engine;
 
     @OneToMany(mappedBy = "car")
@@ -37,4 +40,8 @@ public class Car {
             inverseJoinColumns = @JoinColumn(name = "owner_id")
     )
     private Set<Owner> owners = new HashSet<>();
+
+    // УБЕРИТЕ или ЗАКОММЕНТИРУЙТЕ эту строку, т.к. столбца category нет в таблице
+    // @Column(name = "category")
+    // private String category;
 }
