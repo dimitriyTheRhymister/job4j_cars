@@ -12,6 +12,7 @@ import ru.job4j.cars.service.UserService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.validation.ConstraintViolationException;
 
 @Controller
 @RequestMapping("/auth")
@@ -26,13 +27,21 @@ public class AuthController {
 
     @PostMapping("/register")
     public String register(@ModelAttribute User user, Model model) {
-        if (userService.findByLogin(user.getLogin()).isPresent()) {
-            model.addAttribute("error", "Пользователь с таким логином уже существует");
+        try {
+            userService.save(user);
+            return "redirect:/auth/login";
+        } catch (Exception e) {
+            // Ловим любое исключение, связанное с уникальностью
+            if (e.getCause() instanceof ConstraintViolationException
+                    || e.getMessage().contains("unique")
+                    || e.getMessage().contains("duplicate")) {
+                model.addAttribute("error", "Пользователь с таким логином уже существует");
+                return "auth/register";
+            }
+            // Или обобщённо:
+            model.addAttribute("error", "Ошибка регистрации. Попробуйте другое имя.");
             return "auth/register";
         }
-
-        userService.save(user);
-        return "redirect:/auth/login";
     }
 
     @GetMapping("/login")
