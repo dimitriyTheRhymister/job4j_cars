@@ -7,8 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @AllArgsConstructor
 public class UserRepository {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserRepository.class);
     private final CrudRepository crudRepository;
 
     public User save(User user) {

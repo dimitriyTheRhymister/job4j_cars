@@ -6,6 +6,9 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.job4j.cars.model.Engine;
 import ru.job4j.cars.repository.EngineRepository;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +16,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @Transactional(readOnly = true)
 public class EngineService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EngineService.class);
     private final EngineRepository engineRepository;
 
     @Transactional

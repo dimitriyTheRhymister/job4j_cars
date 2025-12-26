@@ -17,10 +17,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 @AllArgsConstructor
 @Transactional(readOnly = true)
 public class PostService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PostService.class);
     private final PostRepository postRepository;
     private final CarRepository carRepository;
     private final EngineRepository engineRepository;
@@ -109,13 +113,23 @@ public class PostService {
         return photoUrls;
     }
 
-    // Остальные методы остаются без изменений
     public List<Post> findAll() {
         return postRepository.findAll();
     }
 
     public List<Post> findAllActive() {
         return postRepository.findActive();
+    }
+
+    // === НОВЫЙ МЕТОД: пагинация активных объявлений ===
+    public List<Post> findActivePage(int page, int size) {
+        int offset = page * size;
+        return postRepository.findActivePage(offset, size);
+    }
+
+    // === НОВЫЙ МЕТОД: общее количество активных объявлений ===
+    public long countActive() {
+        return postRepository.countActive();
     }
 
     public Optional<Post> findById(int id) {
@@ -129,18 +143,10 @@ public class PostService {
     @Transactional
     public boolean updateStatus(int postId, Post.PostStatus status, int userId) {
         try {
-            System.out.println("=== UPDATE STATUS DEBUG ===");
-            System.out.println("Post ID: " + postId);
-            System.out.println("New Status: " + status);
-            System.out.println("User ID: " + userId);
-
             postRepository.updateStatus(postId, status, userId);
-
-            System.out.println("Status updated successfully");
             return true;
         } catch (Exception e) {
-            System.err.println("ERROR updating status: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("ERROR updating status: " + e.getMessage());
             return false;
         }
     }
@@ -230,11 +236,6 @@ public class PostService {
     }
 
     private void updatePostFields(Post post, PostDto postDto) {
-        // ДОБАВЬ ОТЛАДКУ:
-        System.out.println("=== UPDATE POST FIELDS ===");
-        System.out.println("Current post status: " + post.getStatus());
-        System.out.println("Status from DTO: " + postDto.getStatus());
-
         post.setDescription(postDto.getDescription());
         post.setPrice(postDto.getPrice());
         post.setBodyType(postDto.getBodyType());
@@ -242,12 +243,7 @@ public class PostService {
         post.setTransmission(postDto.getTransmission());
         post.setMileage(postDto.getMileage());
         post.setColor(postDto.getColor());
-
-        // ДОБАВЬ ЭТУ СТРОЧКУ (если еще не добавил):
         post.setStatus(postDto.getStatus());
-
-        System.out.println("Status after update: " + post.getStatus());
-
         updateCarFields(post.getCar(), postDto);
     }
 
@@ -293,10 +289,9 @@ public class PostService {
             Path filePath = Paths.get(UPLOAD_DIR + fileName);
             if (Files.exists(filePath)) {
                 Files.delete(filePath);
-                System.out.println("Файл удален: " + filePath);
             }
         } catch (Exception e) {
-            System.err.println("Ошибка при удалении файла: " + e.getMessage());
+            LOGGER.error("Ошибка при удалении файла: " + e.getMessage());
         }
     }
 

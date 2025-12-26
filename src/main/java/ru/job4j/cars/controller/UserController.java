@@ -7,17 +7,21 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import ru.job4j.cars.exception.UserAlreadyExistsException;
 import ru.job4j.cars.model.User;
 import ru.job4j.cars.service.UserService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import javax.validation.ConstraintViolationException;
 
 @Controller
 @RequestMapping("/auth")
 @AllArgsConstructor
-public class AuthController {
+public class UserController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
 
     @GetMapping("/register")
@@ -30,18 +34,11 @@ public class AuthController {
         try {
             userService.save(user);
             return "redirect:/auth/login";
-        } catch (Exception e) {
-            // Ловим любое исключение, связанное с уникальностью
-            if (e.getCause() instanceof ConstraintViolationException
-                    || e.getMessage().contains("unique")
-                    || e.getMessage().contains("duplicate")) {
-                model.addAttribute("error", "Пользователь с таким логином уже существует");
-                return "auth/register";
-            }
-            // Или обобщённо:
-            model.addAttribute("error", "Ошибка регистрации. Попробуйте другое имя.");
+        } catch (UserAlreadyExistsException e) {
+            model.addAttribute("error", e.getMessage());
             return "auth/register";
         }
+        // Все остальные исключения (500) — не ловим!
     }
 
     @GetMapping("/login")

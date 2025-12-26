@@ -8,13 +8,16 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.job4j.cars.dto.PostDto;
 import ru.job4j.cars.model.Engine;
 import ru.job4j.cars.model.Post;
 import ru.job4j.cars.model.User;
+import ru.job4j.cars.presenter.PostPresenter;
 import ru.job4j.cars.service.EngineService;
 import ru.job4j.cars.service.PostService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -26,6 +29,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @RequestMapping("/posts")
 public class PostController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PostController.class);
     private final PostService postService;
     private final EngineService engineService;
 
@@ -37,13 +41,7 @@ public class PostController {
         }
 
         model.addAttribute("postDto", new PostDto());
-        model.addAttribute("brands", postService.getAllBrands());
-        model.addAttribute("bodyTypes", postService.getAllBodyTypes());
-        model.addAttribute("categories", postService.getAllCategories());
-        model.addAttribute("transmissions", postService.getAllTransmissions());
-        model.addAttribute("engineTypes", postService.getAllEngineTypes());
-        model.addAttribute("colors", postService.getAllColors());
-        model.addAttribute("engines", engineService.findAll());
+        addAttributesForForm(model);
         return "post/create";
     }
 
@@ -141,46 +139,17 @@ public class PostController {
 
         Post post = postOptional.get();
 
-        // Проверяем, что это объявление пользователя
         if (!post.getUser().getId().equals(user.getId())) {
             return "redirect:/posts/" + id;
         }
 
-        // Заполняем модель
         fillEditModel(post, model);
-
         return "post/edit";
     }
 
     private void fillEditModel(Post post, Model model) {
-        // Создаем DTO
-        PostDto postDto = new PostDto();
-        postDto.setId(post.getId()); // Добавляем ID
-        postDto.setDescription(post.getDescription());
-        postDto.setPrice(post.getPrice());
-        postDto.setBrand(post.getCar().getBrand());
-        postDto.setModel(post.getCar().getModel());
-        postDto.setManufactureYear(post.getCar().getManufactureYear());
-        postDto.setBodyType(post.getBodyType());
-        postDto.setEngineType(post.getEngineType());
-        postDto.setTransmission(post.getTransmission());
-        postDto.setMileage(post.getMileage());
-        postDto.setColor(post.getColor());
-        postDto.setEngineId(post.getCar().getEngine().getId());
-
-        // ВАЖНО: устанавливаем статус с проверкой на null
-        Post.PostStatus status = post.getStatus();
-        if (status == null) {
-            status = Post.PostStatus.ACTIVE; // Значение по умолчанию
-            System.err.println("WARNING: Post " + post.getId() + " has null status, setting to ACTIVE");
-        }
-        postDto.setStatus(status); // Устанавливаем статус в DTO
-
-        // Добавляем другие поля для отображения
-        postDto.setUserLogin(post.getUser().getLogin());
-        postDto.setPhotoUrls(post.getPhotoUrls());
-
-        model.addAttribute("currentStatus", status);
+        PostDto postDto = PostPresenter.toEditDto(post);
+        model.addAttribute("currentStatus", postDto.getStatus());
         model.addAttribute("postDto", postDto);
         model.addAttribute("postId", post.getId());
         model.addAttribute("currentPhotos", post.getPhotoUrls());
@@ -194,18 +163,16 @@ public class PostController {
                          @RequestParam(value = "newPhotos", required = false) List<MultipartFile> newPhotos,
                          HttpSession session,
                          Model model) {
-        System.out.println("DEBUG: postDto.status = " + postDto.getStatus());
-        System.out.println("DEBUG: postDto.status class = " + (postDto.getStatus() != null ? postDto.getStatus().getClass() : "null"));
+        // ЕДИНСТВЕННЫЙ БЛОК ОТЛАДКИ
+        LOGGER.debug("=== EDIT FORM SUBMISSION ===");
+        LOGGER.debug("Post ID: " + id);
+        LOGGER.debug("Status from form: " + postDto.getStatus());
+        LOGGER.debug("Description: " + postDto.getDescription());
+
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/auth/login";
         }
-
-        // ДОБАВЬ ОТЛАДКУ:
-        System.out.println("=== EDIT FORM SUBMISSION ===");
-        System.out.println("Post ID: " + id);
-        System.out.println("Status from form: " + postDto.getStatus());
-        System.out.println("Description: " + postDto.getDescription());
 
         if (!hasEditPermission(id, user)) {
             return "redirect:/posts/" + id;
@@ -217,10 +184,8 @@ public class PostController {
             return "post/edit";
         }
 
-        // Обновляем пост с новыми фото
         postDto.setPhotos(newPhotos);
         postService.update(id, postDto, user);
-
         return "redirect:/posts/" + id;
     }
 
@@ -246,9 +211,6 @@ public class PostController {
         }
     }
 
-    /**
-     * Проверяет права пользователя на редактирование поста
-     */
     private boolean hasEditPermission(int postId, User user) {
         Optional<Post> postOptional = postService.findById(postId);
         return postOptional.isPresent()
@@ -268,14 +230,11 @@ public class PostController {
         String filterName = "Все мои объявления";
 
         if (statusParam == null) {
-            // Все мои объявления
             posts = postService.findByUserId(user.getId());
         } else {
-            // Фильтр по статусу
             Post.PostStatus status = Post.PostStatus.valueOf(statusParam.toUpperCase());
             posts = postService.findByUserIdAndStatus(user.getId(), status);
 
-            // Название фильтра
             switch (status) {
                 case ACTIVE:
                     filterName = "Мои активные объявления";

@@ -1,10 +1,15 @@
 package ru.job4j.cars.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.job4j.cars.exception.UserAlreadyExistsException;
 import ru.job4j.cars.model.User;
 import ru.job4j.cars.repository.UserRepository;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
@@ -12,11 +17,17 @@ import java.util.Optional;
 @AllArgsConstructor
 @Transactional(readOnly = true)
 public class UserService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
 
     @Transactional
     public User save(User user) {
-        return userRepository.save(user);
+        try {
+            return userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            // Ловим нарушение уникальности (например, дубликат логина)
+            throw new UserAlreadyExistsException("Пользователь с таким логином уже существует");
+        }
     }
 
     public Optional<User> findById(int id) {

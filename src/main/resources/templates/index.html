@@ -19,12 +19,12 @@
             height: 200px;
             object-fit: cover;
         }
-.status-badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 1;
-}
+        .status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1;
+        }
         .price {
             color: #dc3545;
             font-weight: bold;
@@ -74,12 +74,9 @@
                 <div class="card post-card">
                     <!-- Статусные значки -->
                     <div class="status-badge">
-                    <span th:if="${post.status.name() == 'SOLD'}"
-                          class="badge bg-danger">ПРОДАНО</span>
-                        <span th:if="${post.status.name() == 'ACTIVE'}"
-                              class="badge bg-success">АКТИВНО</span>
-                        <span th:if="${post.status.name() == 'ARCHIVED'}"
-                              class="badge bg-secondary">АРХИВ</span>
+                        <span th:if="${post.status.name() == 'SOLD'}" class="badge bg-danger">ПРОДАНО</span>
+                        <span th:if="${post.status.name() == 'ACTIVE'}" class="badge bg-success">АКТИВНО</span>
+                        <span th:if="${post.status.name() == 'ARCHIVED'}" class="badge bg-secondary">АРХИВ</span>
                     </div>
 
                     <img th:if="${post.photoUrls != null and not post.photoUrls.empty}"
@@ -90,6 +87,7 @@
                          src="https://via.placeholder.com/300x200?text=No+Photo"
                          class="card-img-top car-image"
                          alt="Нет фото">
+
                     <div class="card-body">
                         <h5 class="card-title">
                             [[${post.car.brand}]] [[${post.car.model}]]
@@ -98,10 +96,7 @@
                         <p class="card-text text-truncate">[[${post.description}]]</p>
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="price">[[${#numbers.formatInteger(post.price, 0, 'DEFAULT')}]] ₽</span>
-
-                            <!-- ВСЕГДА "Подробнее" - как у всех -->
-                            <a th:href="@{/posts/{id}(id=${post.id})}"
-                               class="btn btn-sm btn-primary">
+                            <a th:href="@{/posts/{id}(id=${post.id})}" class="btn btn-sm btn-primary">
                                 <i class="bi bi-eye"></i> Подробнее
                             </a>
                         </div>
@@ -124,6 +119,27 @@
             <a th:href="@{/posts/create}">Добавьте первое!</a>
         </div>
     </th:block>
+
+    <!-- ПАГИНАЦИЯ -->
+    <nav th:if="${totalPages > 1}" aria-label="Постраничная навигация" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <!-- Назад -->
+            <li class="page-item" th:classappend="${currentPage == 0} ? disabled">
+                <a class="page-link" th:href="@{/(page=${currentPage - 1}, size=${pageSize})}" tabindex="-1">Назад</a>
+            </li>
+
+            <!-- Номера страниц -->
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                th:classappend="${i == currentPage} ? active">
+                <a class="page-link" th:href="@{/(page=${i}, size=${pageSize})}" th:text="${i + 1}">1</a>
+            </li>
+
+            <!-- Вперёд -->
+            <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? disabled">
+                <a class="page-link" th:href="@{/(page=${currentPage + 1}, size=${pageSize})}">Вперёд</a>
+            </li>
+        </ul>
+    </nav>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>

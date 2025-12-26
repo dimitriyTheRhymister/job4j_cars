@@ -1,16 +1,19 @@
 package ru.job4j.cars.repository;
 
 import lombok.AllArgsConstructor;
-import org.hibernate.Hibernate;
+import org.hibernate.query.Query;
 import ru.job4j.cars.model.Post;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @AllArgsConstructor
 public class PostRepository {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PostRepository.class);
     private final CrudRepository crudRepository;
 
     public Post save(Post post) {
@@ -35,7 +38,7 @@ public class PostRepository {
                         + "LEFT JOIN FETCH p.user "
                         + "LEFT JOIN FETCH p.car c "
                         + "LEFT JOIN FETCH c.engine "
-                        + "LEFT JOIN FETCH p.photoUrls "  // ДОБАВЛЕНО
+                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE p.id = :id",
                 Post.class,
                 Map.of("id", id)
@@ -48,7 +51,7 @@ public class PostRepository {
                         + "LEFT JOIN FETCH p.user "
                         + "LEFT JOIN FETCH p.car c "
                         + "LEFT JOIN FETCH c.engine "
-                        + "LEFT JOIN FETCH p.photoUrls "  // ДОБАВЛЕНО
+                        + "LEFT JOIN FETCH p.photoUrls "
                         + "ORDER BY p.created DESC",
                 Post.class
         );
@@ -60,10 +63,37 @@ public class PostRepository {
                         + "LEFT JOIN FETCH p.user "
                         + "LEFT JOIN FETCH p.car c "
                         + "LEFT JOIN FETCH c.engine "
-                        + "LEFT JOIN FETCH p.photoUrls "  // ДОБАВЛЕНО
+                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE p.status = 'ACTIVE' "
                         + "ORDER BY p.created DESC",
                 Post.class
+        );
+    }
+
+    // === НОВЫЙ МЕТОД С ПОДДЕРЖКОЙ ПАГИНАЦИИ ===
+    public List<Post> findActivePage(int offset, int limit) {
+        return crudRepository.tx(session -> {
+            Query<Post> query = session.createQuery(
+                    "SELECT DISTINCT p FROM Post p "
+                            + "LEFT JOIN FETCH p.user "
+                            + "LEFT JOIN FETCH p.car c "
+                            + "LEFT JOIN FETCH c.engine "
+                            + "LEFT JOIN FETCH p.photoUrls "
+                            + "WHERE p.status = 'ACTIVE' "
+                            + "ORDER BY p.created DESC",
+                    Post.class
+            );
+            query.setFirstResult(offset);
+            query.setMaxResults(limit);
+            return query.getResultList();
+        });
+    }
+
+    // === НОВЫЙ МЕТОД: подсчёт общего числа активных объявлений ===
+    public long countActive() {
+        return crudRepository.tx(session ->
+                session.createQuery("SELECT COUNT(p) FROM Post p WHERE p.status = 'ACTIVE'", Long.class)
+                        .getSingleResult()
         );
     }
 
@@ -73,7 +103,7 @@ public class PostRepository {
                         + "LEFT JOIN FETCH p.user "
                         + "LEFT JOIN FETCH p.car c "
                         + "LEFT JOIN FETCH c.engine "
-                        + "LEFT JOIN FETCH p.photoUrls "  // ДОБАВЛЕНО
+                        + "LEFT JOIN FETCH p.photoUrls "
                         + "WHERE p.user.id = :userId "
                         + "ORDER BY p.created DESC",
                 Post.class,
@@ -104,16 +134,15 @@ public class PostRepository {
 
     public List<String> getPhotosByPostId(int postId) {
         return crudRepository.tx(session -> {
-            Post post = session.find(Post.class, postId);
+            var post = session.find(Post.class, postId);
             if (post != null) {
-                Hibernate.initialize(post.getPhotoUrls());
+                org.hibernate.Hibernate.initialize(post.getPhotoUrls());
                 return post.getPhotoUrls();
             }
-            return List.of();
+            return java.util.List.of();
         });
     }
 
-    // В PostRepository.java добавляем:
     public List<Post> findByStatus(Post.PostStatus status) {
         return crudRepository.query(
                 "SELECT DISTINCT p FROM Post p "
