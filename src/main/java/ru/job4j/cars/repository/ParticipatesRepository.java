@@ -9,12 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @AllArgsConstructor
 public class ParticipatesRepository {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ParticipatesRepository.class);
     private final CrudRepository crudRepository;
 
     /**

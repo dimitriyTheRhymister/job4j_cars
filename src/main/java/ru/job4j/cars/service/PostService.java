@@ -17,14 +17,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 @Transactional(readOnly = true)
 public class PostService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PostService.class);
     private final PostRepository postRepository;
     private final CarRepository carRepository;
     private final EngineRepository engineRepository;
@@ -146,7 +145,7 @@ public class PostService {
             postRepository.updateStatus(postId, status, userId);
             return true;
         } catch (Exception e) {
-            LOGGER.error("ERROR updating status: " + e.getMessage());
+            log.error("ERROR updating status: {}", e.getMessage());
             return false;
         }
     }
@@ -291,7 +290,7 @@ public class PostService {
                 Files.delete(filePath);
             }
         } catch (Exception e) {
-            LOGGER.error("Ошибка при удалении файла: " + e.getMessage());
+            log.error("Ошибка при удалении файла: {}", e.getMessage());
         }
     }
 

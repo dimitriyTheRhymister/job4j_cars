@@ -8,15 +8,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import ru.job4j.cars.model.Post;
 import ru.job4j.cars.service.PostService;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 
 @Controller
 @AllArgsConstructor
 public class IndexController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(IndexController.class);
     private final PostService postService;
 
     @GetMapping("/")

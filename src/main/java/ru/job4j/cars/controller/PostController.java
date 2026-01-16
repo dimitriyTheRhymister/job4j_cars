@@ -9,15 +9,13 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.job4j.cars.dto.PostDto;
-import ru.job4j.cars.model.Engine;
 import ru.job4j.cars.model.Post;
 import ru.job4j.cars.model.User;
 import ru.job4j.cars.presenter.PostPresenter;
 import ru.job4j.cars.service.EngineService;
 import ru.job4j.cars.service.PostService;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -25,11 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Controller
 @AllArgsConstructor
 @RequestMapping("/posts")
 public class PostController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PostController.class);
     private final PostService postService;
     private final EngineService engineService;
 
@@ -164,10 +162,10 @@ public class PostController {
                          HttpSession session,
                          Model model) {
         // ЕДИНСТВЕННЫЙ БЛОК ОТЛАДКИ
-        LOGGER.debug("=== EDIT FORM SUBMISSION ===");
-        LOGGER.debug("Post ID: " + id);
-        LOGGER.debug("Status from form: " + postDto.getStatus());
-        LOGGER.debug("Description: " + postDto.getDescription());
+        log.debug("=== EDIT FORM SUBMISSION ===");
+        log.debug("Post ID: {}", id);
+        log.debug("Status from form: {}", postDto.getStatus());
+        log.debug("Description: {}", postDto.getDescription());
 
         User user = (User) session.getAttribute("user");
         if (user == null) {

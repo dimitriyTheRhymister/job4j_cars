@@ -12,13 +12,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @Component
 @Order(2)  // Порядок выполнения
 public class SessionFilter extends HttpFilter {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SessionFilter.class);
 
     @Override
     protected void doFilter(HttpServletRequest request,

@@ -11,13 +11,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @Component
 @Order(1)  // Выполняется первым
 public class AuthorizationFilter extends HttpFilter {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationFilter.class);
 
     @Override
     protected void doFilter(HttpServletRequest request,

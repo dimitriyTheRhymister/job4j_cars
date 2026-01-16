@@ -8,16 +8,12 @@ import ru.job4j.cars.exception.UserAlreadyExistsException;
 import ru.job4j.cars.model.User;
 import ru.job4j.cars.repository.UserRepository;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Optional;
 
 @Service
 @AllArgsConstructor
 @Transactional(readOnly = true)
 public class UserService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
 
     @Transactional
